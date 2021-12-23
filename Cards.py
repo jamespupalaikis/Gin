@@ -1,0 +1,257 @@
+import numpy as np
+import random as rand
+
+########################################################################################################################
+suitdict = {1: 'C', 2: 'D', 3: 'H', 4: 'S'}
+valuedict = {1:1,2:2,3:3,4:4,5:5, 6:6,7:7, 8:8, 9:9, 10:10, 11:10, 12:10,13:10}
+carddict = {1:'A',2:'2',3:'3',4:'4',5:'5', 6:'6',7:'7', 8:'8', 9:'9', 10:'10', 11:'J', 12:'Q',13:'K'}
+
+########################################################################################################################
+def lessthan(left,
+             right):  # comparison function returning true if left is lower value than right (by suit, then face value)
+    if (left[0] == right[0]):
+        assert (left[1] != right[1])
+        return (left[1] < right[1])
+    else:
+        return (left[0] < right[0])
+
+
+
+def sorthand(hand):
+    if (len(hand) > 1):
+        mid = len(hand) // 2
+        left = hand[:mid]
+        right = hand[mid:]
+
+        # Recursive call on each half
+        sorthand(left)
+        sorthand(right)
+
+        # Two iterators for traversing the two halves
+        i = 0
+        j = 0
+
+        # Iterator for the main list
+        k = 0
+
+        while( i < len(left) and j < len(right)):
+            if (lessthan(left[i] ,right[j])):
+                # The value from the left half has been used
+                hand[k] = left[i]
+                # Move the iterator forward
+                i += 1
+            else:
+                hand[k] = right[j]
+                j += 1
+            # Move to the next slot
+            k += 1
+
+            # For all the remaining values
+        while( i < len(left)):
+            hand[k] = left[i]
+            i += 1
+            k += 1
+
+        while( j < len(right)):
+            hand[k] = right[j]
+            j += 1
+            k += 1
+########################################################################################################################
+def getvalue(cards): #takes a list of cards and returns the sum of their face values
+    total = 0
+    while(cards != []):
+        new = cards.pop()
+        total += valuedict[new[1]]
+    return total
+
+def isrun(cards):#returns whether contained cards contain a run
+    if(len(cards) < 3):
+        return False
+    sorthand(cards)
+    start = cards.pop(0)
+    while(cards != []):
+        next = cards.pop(0)
+        if((start[0] == next[0]) and (next[1] == start[1] + 1)):
+            start = next
+        else:
+            return False
+    return True
+
+
+
+def findrun(card, bin):# finds if a run can be made using the card, and the cards from the bin
+    goods = list(filter(lambda x: x[0] == card[0] , bin))#filter to same suit
+    #print(goods)
+    goods = list(filter(lambda x:  x[1] > card[1] , goods))#filter out smaller cards (they should have been included in prev searches bc hand is sorted
+    #print(goods)
+    while(goods != []):
+        if(isrun([card] + goods)):
+            runmade = [card] + goods
+            #print('runfind success!: ', f"scard: {card}, sbin {bin}, rmade; {runmade}, rbin: {list(filter(lambda x: x not in runmade, bin ))}")
+            return (runmade, list(filter(lambda x: x not in runmade, bin )))
+        goods = goods[:-1]
+
+    ass = [card] + bin
+    sorthand(ass)
+    #print('runfind failed:', ([], ass))
+    return(( [] , ass))
+
+
+
+
+
+def findset(card, bin):#same but for sets, return ([set created], [remaining bin])
+    goods = list(filter(lambda x: x[1] == card[1] , bin))
+    bin2 = list(filter(lambda x: x not in goods, bin))
+    if(len(goods) >= 2):
+        #print(f'foundset: {[card] + goods}, remaining: {bin2}')
+        return ([card] + goods, bin2)
+    else:
+        ass = [card] + bin
+        sorthand(ass)
+        #print('setfind failed: ',([], ass) )
+        return ([], ass)
+
+def ismeld(bin):
+    for card in bin:
+        newbin = list(filter(lambda x: x != card ,bin))
+        if(findrun(card, newbin) or (findset(card, newbin) )):
+            return True
+    return False
+
+
+def recurse(bin, melds = [], bestscore = 1000, bestgroup = [[],[]] ,index = 0):
+    #print("STARTING!", f"BIN IS {bin}")
+    if ((ismeld(bin) == False) or (index >= len(bin))): #(index >= len(bin)):
+
+        val = getvalue(bin)
+        #print(f'index: {index}, bin: {bin}, score: {val}')
+        if(val < bestscore):
+            bestscore = val
+            bestgroup = [melds, bin]
+        return bestscore, bestgroup
+
+    sorthand(bin)
+    #print(len(bin), index)
+    card = bin[index]
+    print('1', bin)
+    binmin = bin[:index] + bin[index + 1:]
+    print('2', binmin)
+    newmeld, newbin = findrun(card, binmin)
+    newmeld2, newbin2 = findset(card, binmin)
+
+
+    if newmeld == []:
+        group1 = recurse( bin, melds, bestscore, bestgroup, index + 1)
+    else:
+        group1 = recurse( newbin,melds + [newmeld], bestscore, bestgroup, 0)#index)
+        if(group1 is None):
+            #print('1flag', newbin, melds + [newmeld])
+            pass
+
+    if newmeld2 == []:
+        group2 = recurse( bin, melds,bestscore, bestgroup, index + 1)
+    else:
+        group2 = recurse( newbin2,melds + [newmeld2], bestscore, bestgroup, 0)#index)
+        if (group2 is None):
+            #print('2flag', newbin2, melds + [newmeld2])
+            pass
+
+
+
+
+########################################################################################################################
+
+class deck:
+    def __init__(self, shuffled = True, empty = False):
+        self.deck = []
+        if(empty == False):
+            for suit in range(1,5):
+                for val in range(1,14):
+                    self.deck.append((suit, val))
+
+            if(shuffled == True):
+                rand.shuffle(self.deck)
+    #def
+
+    def __repr__(self):
+        rep = 'Deck: '
+        for card in self.deck:
+            (a,b) = card
+            rep+= str((suitdict[a], carddict[b])) + ', '
+        return rep[:-2]
+
+    def cardcount(self):
+        return(len(self.deck))
+
+    def deal(self):
+        top = self.deck.pop(0)
+        print('card removed')
+        return top
+
+    def peek(self):
+        top = self.deck[0]
+        return top
+
+    def add(self, card):#add to the top of the deck
+        self.deck = [card] + self.deck
+        print('card added')
+
+
+
+
+
+class hand:
+    def __init__(self, deck):
+        self.cards = []
+        while(len(self.cards) != 10):
+            self.cards.append(deck.deal())
+        assert(len(self.cards) == 10)
+
+    def __repr__(self):
+        rep = 'Hand: '
+        for card in self.cards:
+            (a, b) = card
+            rep += str((suitdict[a], carddict[b])) + ', '
+        return rep[:-2]
+
+
+    def drawfrom(self, deck):
+        self.cards.append(deck.deal())
+
+    def discardto(self,card,deck):#takes a card index (from 0) and discards it into specified deck
+        mycard = self.cards.pop(card)
+        deck.add(mycard)
+
+    def sort(self):
+        sorthand(self.cards)
+
+
+########################################################################################################################
+
+
+
+
+#mydeck = deck( empty= True)
+
+
+#print(mydeck)
+#list = list()
+#for i in range(20):
+#    list.append(mydeck.deal())
+#print(list)
+#print(isrun(list))
+#myhand = hand(mydeck)
+
+#print(myhand)
+#myhand.sort()
+#print(myhand)
+
+#print(findset((2,5), [(1,4), (1,5), (1,6), (2,2), (2,6), (2,7), (2,8), (2,10), (4,1), (4,6), (4,7), (4,5)]))
+#ass = [0,1,2,3,4,5]
+#print(ass[:3] + ass[3 + 1:])
+
+
+myhand = [(4,3), (4,5), (4,4), (1,3), (1,4), (3,3), (2,3), (2,4), (2,5), (2,6)]
+
+print(recurse(myhand))
