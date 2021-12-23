@@ -1,5 +1,6 @@
 import numpy as np
 import random as rand
+from copy import deepcopy
 
 ########################################################################################################################
 suitdict = {1: 'C', 2: 'D', 3: 'H', 4: 'S'}
@@ -7,6 +8,14 @@ valuedict = {1:1,2:2,3:3,4:4,5:5, 6:6,7:7, 8:8, 9:9, 10:10, 11:10, 12:10,13:10}
 carddict = {1:'A',2:'2',3:'3',4:'4',5:'5', 6:'6',7:'7', 8:'8', 9:'9', 10:'10', 11:'J', 12:'Q',13:'K'}
 
 ########################################################################################################################
+def flatten(list_of_lists):
+    if (len(list_of_lists) == 0):
+        return list_of_lists
+    if (isinstance(list_of_lists[0], list)):
+        return flatten(list_of_lists[0]) + flatten(list_of_lists[1:])
+    return list_of_lists[:1] + flatten(list_of_lists[1:])
+
+
 def lessthan(left,
              right):  # comparison function returning true if left is lower value than right (by suit, then face value)
     if (left[0] == right[0]):
@@ -59,8 +68,9 @@ def sorthand(hand):
 ########################################################################################################################
 def getvalue(cards): #takes a list of cards and returns the sum of their face values
     total = 0
-    while(cards != []):
-        new = cards.pop()
+    copy = deepcopy(cards)
+    while(copy != []):
+        new = copy.pop()
         total += valuedict[new[1]]
     return total
 
@@ -143,6 +153,7 @@ def recurse(bin, melds = [], bestscore = 1000, bestgroup = [[],[]] ,index = 0):
 
     if newmeld == []:
         group1 = recurse( bin, melds, bestscore, bestgroup, index + 1)
+        #print(1, group1)
     else:
         group1 = recurse( newbin,melds + [newmeld], bestscore, bestgroup, 0)#index)
         if(group1 is None):
@@ -156,10 +167,19 @@ def recurse(bin, melds = [], bestscore = 1000, bestgroup = [[],[]] ,index = 0):
         if (group2 is None):
             #print('2flag', newbin2, melds + [newmeld2])
             pass
+    score1, grouped1 = group1
+    score2, grouped2 = group2
 
+    if(score1 <= score2):
+        return score1,grouped1
+    else:
+        return score2, grouped2
 
-
-
+def meldeval(hand):
+    melds =recurse(hand)[1][0]
+    flat = flatten(melds)
+    deadwood = list(filter(lambda x:x not in flat, hand))
+    return melds, deadwood
 ########################################################################################################################
 
 class deck:
@@ -230,28 +250,3 @@ class hand:
 ########################################################################################################################
 
 
-
-
-#mydeck = deck( empty= True)
-
-
-#print(mydeck)
-#list = list()
-#for i in range(20):
-#    list.append(mydeck.deal())
-#print(list)
-#print(isrun(list))
-#myhand = hand(mydeck)
-
-#print(myhand)
-#myhand.sort()
-#print(myhand)
-
-#print(findset((2,5), [(1,4), (1,5), (1,6), (2,2), (2,6), (2,7), (2,8), (2,10), (4,1), (4,6), (4,7), (4,5)]))
-#ass = [0,1,2,3,4,5]
-#print(ass[:3] + ass[3 + 1:])
-
-
-myhand = [(4,3), (4,5), (4,4), (1,3), (1,4), (3,3), (2,3), (2,4), (2,5), (2,6)]
-
-print(recurse(myhand))
