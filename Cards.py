@@ -144,9 +144,9 @@ def recurse(bin, melds = [], bestscore = 1000, bestgroup = [[],[]] ,index = 0):
     sorthand(bin)
     #print(len(bin), index)
     card = bin[index]
-    print('1', bin)
+    #print('1', bin)
     binmin = bin[:index] + bin[index + 1:]
-    print('2', binmin)
+    #print('2', binmin)
     newmeld, newbin = findrun(card, binmin)
     newmeld2, newbin2 = findset(card, binmin)
 
@@ -240,12 +240,22 @@ class hand:
         self.cards.append(deck.deal())
 
     def discardto(self,card,deck):#takes a card index (from 0) and discards it into specified deck
-        mycard = self.cards.pop(card)
-        deck.add(mycard)
+        #mycard = self.cards.pop(card)
+        self.cards = list(filter(lambda x: x != card,self.cards))
+        deck.add(card)
 
     def sort(self):
         sorthand(self.cards)
 
+    def cardcount(self):
+        return len(self.cards)
+
+    def getcard(self, index):
+        assert(index >= 0)
+        assert(index < len(self.cards))
+        return self.cards[index]
+    def gethand(self):
+        return self.cards
 
 ########################################################################################################################
 
