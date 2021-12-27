@@ -232,4 +232,6 @@ class Gin:
             else:
                 print('enter a valid move!')
 
-game = Gin()
+
+if (__name__ == “main”):
+    game = Gin()

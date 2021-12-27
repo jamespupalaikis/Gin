@@ -222,11 +222,11 @@ class deck:
 
 
 class hand:
-    def __init__(self, deck):
+    def __init__(self):
         self.cards = []
-        while(len(self.cards) != 10):
-            self.cards.append(deck.deal())
-        assert(len(self.cards) == 10)
+        #while(len(self.cards) != 10):
+        #    self.cards.append(deck.deal())
+        #assert(len(self.cards) == 10)
 
     def __repr__(self):
         rep = 'Hand: '
@@ -234,6 +234,12 @@ class hand:
             (a, b) = card
             rep += str((suitdict[a], carddict[b])) + ', '
         return rep[:-2]
+
+    def starthand(self, deck):
+        self.cards = [] #clear current hand
+        while (len(self.cards) != 10):
+            self.cards.append(deck.deal())
+        assert (len(self.cards) == 10)
 
 
     def drawfrom(self, deck):
