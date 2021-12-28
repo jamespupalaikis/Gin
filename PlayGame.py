@@ -1,6 +1,6 @@
 import Cards as c
 from Cards import recurse
-
+import Agents as a
 
 mydeck = c.deck()
 
@@ -8,19 +8,23 @@ print(mydeck.peek())
 
 
 class Gin:
-    def __init__(self, startplayer = 1):
+    def __init__(self, player1, player2, startplayer = 1):#EDIT: takes player1 and player2 now, which will be agents.
         self.knocker = (None,None) #FIRST Player is KNOCKER not necessarily winner, other is ther
         self.winner = None
         self.maindeck = c.deck(shuffled = True)
         self.discarddeck = c.deck(empty = True)
-        self.player1 = c.hand(self.maindeck)
-        self.player2 = c.hand(self.maindeck)
+        self.player1 = player1
+        self.player2 = player2
         self.state = 'deal'#gives the gamestate
-        self.player1.sort()
-        self.player2.sort()
+
+        self.player1.dealhand(self.maindeck)
+        self.player2.dealhand(self.maindeck)
+        self.player1.sorthand()
+        self.player2.sorthand()
         start = self.player1
-        if(startplayer == 2):
+        if (startplayer == 2):
             start = self.player2
+
         self.dealphase(start)
 
         #points for player 1
@@ -119,10 +123,10 @@ class Gin:
     def discard(self, player):
         if(self.discarddeck.cardcount() > 0):
             print(f'Discard Deck Faceup Card: {self.interpret(self.discarddeck.peek())}')
-        print(player)
+        player.printhand()
         while(True):
-            discardindex = (input('Enter the number card you want to discard (0 for first, etc. Type "k" to knock)'))#ADD OPTION TO KNOCK\
-
+            #discardindex = (input('Enter the number card you want to discard (0 for first, etc. Type "k" to knock)'))#ADD OPTION TO KNOCK\
+            discardindex = player.discard()
             try:
                 discardindex = int(discardindex)
             except:
@@ -140,8 +144,8 @@ class Gin:
             elif((discardindex > player.cardcount()) or (discardindex < 0)):
                     print('Not a valid number!')
             elif(discardindex >= 0 and (discardindex < player.cardcount())):
-                    player.discardto(player.getcard(discardindex), self.discarddeck)
-                    player.sort()
+                    player.hand.discardto(player.getcard(discardindex), self.discarddeck)#TODO: implement this at agent level
+                    player.sorthand()
                     eval = recurse(player.gethand())
                     print(f"Current Melds: {self.interpretmelds(eval[1][0])}")
                     print(f"Deadwood value: {eval[0]}")
@@ -165,12 +169,13 @@ class Gin:
             self.discarddeck.add(self.maindeck.deal())
         print(f"{me}'s Turn Now")
         print(f'Discard Deck Faceup Card: {self.interpret(self.discarddeck.peek())}')
-        print(first)
+        first.printhand()
         while(True):
 
-            move = input('Enter "draw" to draw card, or "pass" to pass')
+            #move = input('Enter "draw" to draw card, or "pass" to pass')
+            move = first.initialmove()
             if(move == 'draw'):
-                first.drawfrom(self.discarddeck)
+                first.hand.drawfrom(self.discarddeck)
                 self.discard(first)
                 if((self.knocker[0] is None) == False): #gotta put after discard to check for a knock
                     return
@@ -209,19 +214,20 @@ class Gin:
 
         print(f"{me}'s Turn Now")
         print(f'Discard Deck Faceup Card: {self.interpret(self.discarddeck.peek())}')
-        print(player)
+        player.printhand()
         while (True):
-            move = input('Enter "1" to draw from face down deck, or "2" to draw from the discard deck')
+            #move = input('Enter "1" to draw from face down deck, or "2" to draw from the discard deck')
+            move = player.drawmove()
             if (move == '1'):
                 print(f'You drew: {self.interpret(self.maindeck.peek())}')
-                player.drawfrom(self.maindeck)
+                player.hand.drawfrom(self.maindeck)
                 self.discard(player)
                 if ((self.knocker[0] is None) == False):  # gotta put after discard to check for a knock
                     return
                 self.playTurn(other)
                 return
             elif (move == '2'):
-                player.drawfrom(self.discarddeck)
+                player.hand.drawfrom(self.discarddeck)
                 self.discard(player)
                 if ((self.knocker[0] is None) == False):  # gotta put after discard to check for a knock
                     return
@@ -233,5 +239,7 @@ class Gin:
                 print('enter a valid move!')
 
 
-if (__name__ == “main”):
-    game = Gin()
+if (__name__ == "__main__"):
+    p1 = a.humanplayer('Frank 1')
+    p2 = a.humanplayer('Jimbob 2')
+    game = Gin(p1,p2)
