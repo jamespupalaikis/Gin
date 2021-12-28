@@ -130,7 +130,7 @@ def ismeld(bin):
     return False
 
 
-def recurse(bin, melds = [], bestscore = 1000, bestgroup = [[],[]] ,index = 0):
+def recurse(bin, melds = [], bestscore = 1000, bestgroup = [[],[]] ,index = 0):#recurse() gives (deadwoodvalue, [[melds], [deadwood']])
     #print("STARTING!", f"BIN IS {bin}")
     if ((ismeld(bin) == False) or (index >= len(bin))): #(index >= len(bin)):
 
@@ -255,6 +255,11 @@ class hand:
 
     def cardcount(self):
         return len(self.cards)
+
+
+    def findcard(self, card):
+        return self.cards.index(card)
+
 
     def getcard(self, index):
         assert(index >= 0)

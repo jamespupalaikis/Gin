@@ -96,8 +96,9 @@ class Gin:
 
 
     def knock(self, player):
-        tally = recurse(player.gethand())
-        deadwood = tally[1][1]
+        player.updatemelds()
+        #tally = recurse(player.gethand())
+        deadwood = player.deadwood[1]
         deadvals = [c.valuedict[card[1]] for card in deadwood]
         deadvals.sort()
         if(len(deadvals) == 0 ):
@@ -144,11 +145,14 @@ class Gin:
             elif((discardindex > player.cardcount()) or (discardindex < 0)):
                     print('Not a valid number!')
             elif(discardindex >= 0 and (discardindex < player.cardcount())):
-                    player.hand.discardto(player.getcard(discardindex), self.discarddeck)#TODO: implement this at agent level
+                    dcard = player.getcard(discardindex)
+                    print(f'discarded {self.interpret(dcard)}')
+                    player.hand.discardto(dcard, self.discarddeck)#TODO: implement this at agent level
                     player.sorthand()
-                    eval = recurse(player.gethand())
-                    print(f"Current Melds: {self.interpretmelds(eval[1][0])}")
-                    print(f"Deadwood value: {eval[0]}")
+                    player.updatemelds()
+
+                    print(f"Current Melds: {self.interpretmelds(player.melds)}")#recurse() gives (deadwoodvalue, [[melds], [deadwood']])
+                    print(f"Deadwood value: {player.deadwood[0]}")
                     return
             elif(discardindex == 'quit'):
                     assert(True == False)
@@ -173,7 +177,7 @@ class Gin:
         while(True):
 
             #move = input('Enter "draw" to draw card, or "pass" to pass')
-            move = first.initialmove()
+            move = first.initialmove(self.discarddeck)
             if(move == 'draw'):
                 first.hand.drawfrom(self.discarddeck)
                 self.discard(first)
@@ -182,12 +186,14 @@ class Gin:
                 self.discarddeck.add(self.maindeck.deal())
                 #self.state = 'play'
                 print('playing turns normally now')
+                print('###################################################################################')
                 self.playTurn(other)
                 return
                 #initiate turn function for other player
             elif(move == 'pass'):
                 if(index == 1):
                     print('playing turns normally now')
+                    print('###################################################################################')
                     self.playTurn(other)
                     return
                 elif(index == 0):
@@ -217,13 +223,14 @@ class Gin:
         player.printhand()
         while (True):
             #move = input('Enter "1" to draw from face down deck, or "2" to draw from the discard deck')
-            move = player.drawmove()
+            move = player.drawmove(self.discarddeck)
             if (move == '1'):
                 print(f'You drew: {self.interpret(self.maindeck.peek())}')
                 player.hand.drawfrom(self.maindeck)
                 self.discard(player)
                 if ((self.knocker[0] is None) == False):  # gotta put after discard to check for a knock
                     return
+                print('###################################################################################')
                 self.playTurn(other)
                 return
             elif (move == '2'):
@@ -231,6 +238,7 @@ class Gin:
                 self.discard(player)
                 if ((self.knocker[0] is None) == False):  # gotta put after discard to check for a knock
                     return
+                print('###################################################################################')
                 self.playTurn(other)
                 return
                 # initiate turn function for other player
@@ -240,6 +248,6 @@ class Gin:
 
 
 if (__name__ == "__main__"):
-    p1 = a.humanplayer('Frank 1')
-    p2 = a.humanplayer('Jimbob 2')
+    p1 = a.textplayer('Jimbob')
+    p2 = a.betterrandom('Randy')
     game = Gin(p1,p2)
