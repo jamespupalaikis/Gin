@@ -127,7 +127,7 @@ class Gin:
         player.printhand()
         while(True):
             #discardindex = (input('Enter the number card you want to discard (0 for first, etc. Type "k" to knock)'))#ADD OPTION TO KNOCK\
-            discardindex = player.discard()
+            discardindex = player.discardmove(self.discarddeck)
             try:
                 discardindex = int(discardindex)
             except:
@@ -248,6 +248,6 @@ class Gin:
 
 
 if (__name__ == "__main__"):
-    p1 = a.textplayer('Jimbob')
+    p1 = a.qlearner(["models/trainingmodels/start_init.pth","models/trainingmodels/draw_init.pth","models/trainingmodels/discard_init.pth"]  )
     p2 = a.betterrandom('Randy')
     game = Gin(p1,p2)

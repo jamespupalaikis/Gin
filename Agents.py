@@ -4,6 +4,7 @@ import random as rand
 from Cards import recurse
 import BuildModel as mod
 
+import torch
 import numpy as np
 #here we will create "agents" that will interface with the game class.
 #TODO: edit PlayGamre file so that instead of "player" attributes being just hand objects, they are "agents"
@@ -59,7 +60,7 @@ class textplayer(agent):
         move = input('Enter "draw" to draw card, or "pass" to pass')
         return move
 
-    def discard(self):
+    def discardmove(self,discarddeck):
         move = (input('Enter the number card you want to discard (0 for first, etc. Type "k" to knock)'))
         return move
 
@@ -80,7 +81,7 @@ class randombot(agent):
         return moves[r]
     def drawmove(self, discarddeck):
         return str(rand.randint(1,2))
-    def discard(self):
+    def discardmove(self,discarddeck):
         moves = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'k']
         r = rand.randint(0,11)
         return moves[r]
@@ -101,7 +102,7 @@ class betterrandom(agent):
         return "pass"
 
         return
-    def discard(self):#discard a random deadwood that is not part of a meld
+    def discardmove(self,discarddeck):#discard a random deadwood that is not part of a meld
         self.updatemelds()
         deadv = self.deadvals()
         deadv.sort()
@@ -129,7 +130,7 @@ class simpletree(agent):
 
     def initialmove(self, discarddeck):#check whether the card creates any runs, or matches the value of any held cards
         return
-    def discard(self):#discard the highest value deadwood card that there is no value match for
+    def discardmove(self):#discard the highest value deadwood card that there is no value match for
         return
     def drawmove(self):#similar to initialmove, check if faceup card creates runs or matches value
         return
@@ -147,8 +148,8 @@ class qlearner(agent):
         self.drawnet.load_state_dict(torch.load(models[1]))
         self.discardnet = mod.DiscardNet()
         self.discardnet.load_state_dict(torch.load(models[2]))
-        self.state = (np.zeros((4,13)),np.zeros((4,13)))#store as 2 2D lists: hand list of 4 suits * 13 cards, and discard list of same
-        self.first = (False, np.zeros((104)), -1)#bool for if first move was made, 52 len array for hand, and sparse 52 array for the faceup card(all zeros except 1)
+        self.state = [np.zeros((4,13)),np.zeros((4,13))]#store as 2 2D lists: hand list of 4 suits * 13 cards, and discard list of same
+        self.first = [False, np.zeros((104)), -1]#bool for if first move was made, 52 len array for hand, and sparse 52 array for the faceup card(all zeros except 1)
         self.turns = ([],[],[],[],[]) #turns will store a drawboardstate, a draw move (-1 or 1),, a discard boardstate, a set of discard weights, and a discard move for a given turn
 
     def dealhand(self, deck):  # fills your hand from deck and updates the gamestate
@@ -190,7 +191,7 @@ class qlearner(agent):
         top = discarddeck.peek()
         toparr = self.singlearray(top)
         brdstate = np.append(self.state[0].flatten(), toparr, 0)#boardstate to add to self.first
-        input = torch.tensor(brdstate).astype(float)
+        input = torch.tensor(brdstate).float()
         move = self.startnet(input)[0].item()
         self.first[0] = True
         self.first[1] = brdstate
@@ -209,21 +210,21 @@ class qlearner(agent):
         toparr = self.singlearray(top)
         brdstate = np.append(self.state[0].flatten(), discarddeck.array(), 0)#boardstate minus top card
         brdstate2 = np.append(brdstate, toparr, 0)#boardstate to add to log
-        input = torch.tensor(brdstate2).astype(float)
+        input = torch.tensor(brdstate2).float()
         move = self.drawnet(input)[0].item()
         self.turns[0].append(brdstate2)
         if (move < 0):#draw from discard pile
             # ADD TO LOG
             self.turns[1].append(-1)
             #DO NOT add to hand state, just do it at the beginning of the discard
-            return 2
+            return '2'
         else:#draw from facedown pile
             # ADD TO LOG
             self.turns[1].append(1)
-            return 1
+            return '1'
         return
 
-    def discard(self):
+    def discardmove(self,discarddeck):
         last = self.gethand()[-1]
         assert (self.state[0][last[0] - 1][last[1] - 1] == 0)  # shouldnt be in hand before
         self.state[0][last[0] - 1][last[1] - 1] = 1  # set hand value to 1
@@ -242,10 +243,12 @@ class qlearner(agent):
         #build input:
         brdstate = np.append(self.state[0].flatten(), discarddeck.array(top = True), 0)#boardstate WITH top card for log
         self.turns[2].append(brdstate)
-        input = torch.tensor(brdstate).astype(float)
-        probs = self.discardnet(input)[0].tolist()#add this to log
+        input = torch.tensor(brdstate).float()
+        probs = self.discardnet(input).tolist()#add this to log
+        print('probs', probs)
         self.turns[3].append(probs)
-        for ind, cardoption in enumerate(probs):
+        enum = enumerate(probs)
+        for ind, cardoption in enum:
             translatedcard = self.hand.translatearray(ind)
             if(self.hand.isinhand(translatedcard)):
                 cardindex = ind #store this in log

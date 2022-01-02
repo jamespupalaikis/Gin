@@ -218,10 +218,10 @@ class deck:
         print('card added')
 
     def array(self, top = False):#return an 52 len array of 1 for the cards that are in the deck minus the top card if top = false (for backend use only)
-        arr = np.zeros(4,13)
+        arr = np.zeros((4,13))
         for card in self.deck[1:]:
             arr[card[0] - 1][card[1] -1] = 0
-        if(top == True):
+        if((top == True) and len(self.deck) > 0):
             top = self.deck[0]
             arr[top[0] - 1][top[1] - 1] = 0
 
