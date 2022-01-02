@@ -272,11 +272,24 @@ class hand:
 
 
     def getcard(self, index):
+
         assert(index >= 0)
         assert(index < len(self.cards))
         return self.cards[index]
     def gethand(self):
         return self.cards
+
+    def isinhand(self, card):#check if card is in hand
+        for c in self.cards:
+            if (c == card):
+                return True
+        return False
+
+    def translatearray(self, arrayindex): #translates a 0-51 array index to a card value
+        suit = arrayindex//13 + 1
+        face = arrayindex%13 + 1
+        return (suit, face)
+
 
 ########################################################################################################################
 

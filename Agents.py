@@ -162,8 +162,7 @@ class qlearner(agent):
         '''if(discard == -1):#drawn from discardpile
             assert(self.state[1][drawn[0] - 1][drawn[1] - 1] == 1)
             self.state[1][drawn[0] - 1][drawn[1] - 1] = 0#set discarddeck value to 0'''
-
-    #ADD TO TURN LOG
+            #OBSOLETE
 
 
     def savestate_discard(self, discarded, probs):#updates self.state after a discard (update hand, add to discard)
@@ -210,7 +209,7 @@ class qlearner(agent):
         toparr = self.singlearray(top)
         brdstate = np.append(self.state[0].flatten(), discarddeck.array(), 0)#boardstate minus top card
         brdstate2 = np.append(brdstate, toparr, 0)#boardstate to add to log
-        input = torch.tensor(brdstate).astype(float)
+        input = torch.tensor(brdstate2).astype(float)
         move = self.drawnet(input)[0].item()
         self.turns[0].append(brdstate2)
         if (move < 0):#draw from discard pile
@@ -230,9 +229,28 @@ class qlearner(agent):
         self.state[0][last[0] - 1][last[1] - 1] = 1  # set hand value to 1
         #log last card drawn as in hand
         ########################
+        # LOOK FOR KNOCK!!!
+        self.updatemelds()
+        deadv = self.deadvals()
+        deadv.sort()
+        dead = sum(deadv[:-1])
+        if (dead <= 10):
+            return 'k'
+
+
+
         #build input:
-        brdstate = np.append(self.state[0].flatten(), discarddeck.array(top = True), 0)#boardstate WITH top card
-        
+        brdstate = np.append(self.state[0].flatten(), discarddeck.array(top = True), 0)#boardstate WITH top card for log
+        self.turns[2].append(brdstate)
+        input = torch.tensor(brdstate).astype(float)
+        probs = self.discardnet(input)[0].tolist()#add this to log
+        self.turns[3].append(probs)
+        for ind, cardoption in enumerate(probs):
+            translatedcard = self.hand.translatearray(ind)
+            if(self.hand.isinhand(translatedcard)):
+                cardindex = ind #store this in log
+                self.turns[4].append(ind)
+                return self.hand.findcard(translatedcard)
 
 
         return

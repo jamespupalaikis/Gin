@@ -86,7 +86,8 @@ class DiscardNet(nn.Module):
             nn.ReLU(),
             nn.Linear(128, 128),
             nn.ReLU(),
-            nn.Linear(128, 52)
+            nn.Linear(128, 52),
+            nn.Softmax(dim=0)
         )
 
     def forward(self,x):
@@ -112,6 +113,10 @@ if (__name__ == "__main__"):
     x = torch.tensor((np.append(np.zeros((52,) ),(np.zeros((52,))), 0)) )
     print(x.shape)
 #x = torch.tensor(x)
-    pred = startnet(x.float())
+    pred = discardnet(x.float())
     print(pred)
-    print(pred[0].item())
+    print(list(enumerate(pred.tolist())))
+
+
+#print(51//13 + 1)
+#print(51%13 + 1)
