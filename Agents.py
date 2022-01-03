@@ -150,7 +150,8 @@ class qlearner(agent):
         self.discardnet.load_state_dict(torch.load(models[2]))
         self.state = [np.zeros((4,13)),np.zeros((4,13))]#store as 2 2D lists: hand list of 4 suits * 13 cards, and discard list of same
         self.first = [False, np.zeros((104)), -1]#bool for if first move was made, 52 len array for hand, and sparse 52 array for the faceup card(all zeros except 1)
-        self.turns = ([],[],[],[],[]) #turns will store a drawboardstate, a draw move (-1 or 1),, a discard boardstate, a set of discard weights, and a discard move for a given turn
+        self.turns = ([],[],[],[],[]) #turns will store a drawboardstate, a draw move (-1 or 1),, a discard boardstate, a set of discard weights, a
+        # nd a discard move for a given turn
 
     def dealhand(self, deck):  # fills your hand from deck and updates the gamestate
         self.hand.starthand(deck)

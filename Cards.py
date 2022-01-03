@@ -210,6 +210,7 @@ class deck:
         return top
 
     def peek(self):
+        assert((self.deck) != [])
         top = self.deck[0]
         return top
 

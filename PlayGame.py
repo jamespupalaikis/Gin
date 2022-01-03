@@ -171,7 +171,7 @@ class Gin:
         #other will be the player that is not drawing
         if(index == 0):
             self.discarddeck.add(self.maindeck.deal())
-        print(f"{me}'s Turn Now")
+        print(f"{first.name}'s Turn Now")
         print(f'Discard Deck Faceup Card: {self.interpret(self.discarddeck.peek())}')
         first.printhand()
         while(True):
@@ -218,13 +218,19 @@ class Gin:
             me = "Player 2"
             self.state = 'p2turn'
 
-        print(f"{me}'s Turn Now")
+        print(f"{player.name}'s Turn Now")
         print(f'Discard Deck Faceup Card: {self.interpret(self.discarddeck.peek())}')
         player.printhand()
+
         while (True):
             #move = input('Enter "1" to draw from face down deck, or "2" to draw from the discard deck')
             move = player.drawmove(self.discarddeck)
             if (move == '1'):
+                try:
+                    top = (self.maindeck.peek())
+                except:
+                    print('Everyone sucks, no more cards')
+                    return
                 print(f'You drew: {self.interpret(self.maindeck.peek())}')
                 player.hand.drawfrom(self.maindeck)
                 self.discard(player)
@@ -249,5 +255,5 @@ class Gin:
 
 if (__name__ == "__main__"):
     p1 = a.qlearner(["models/trainingmodels/start_init.pth","models/trainingmodels/draw_init.pth","models/trainingmodels/discard_init.pth"]  )
-    p2 = a.betterrandom('Randy')
+    p2 = a.randombot('Randy')
     game = Gin(p1,p2)
