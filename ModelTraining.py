@@ -266,4 +266,29 @@ if (__name__ == "__main__"):
     p2 = a.betterrandom('Bobby')
     game = TrainGame(p1,p2)
     vals = game.playgame()
-    print(vals)
+    print(vals[0])
+    x = 0
+    for i in vals[1][0]:
+        x += 1
+        print(x)
+        print(i)
+    x = 0
+    for i in vals[1][1]:
+        x += 1
+        print(x)
+        print(i)
+    x = 0
+    for i in vals[1][2]:
+        x += 1
+        print(x)
+        print(i)
+    x = 0
+    for i in vals[1][3]:
+        x += 1
+        print(x)
+        print(i)
+    x = 0
+    for i in vals[1][4]:
+        x += 1
+        print(x)
+        print(i)
