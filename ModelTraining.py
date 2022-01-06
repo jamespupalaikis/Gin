@@ -32,7 +32,7 @@ class TrainGame: #this will run a single game, return a result (reward/score), a
 
 
         #points for player 1
-        points = self.getwinner()
+        #points = self.getwinner()
         #result = self.win(points)
 
 
@@ -41,7 +41,7 @@ class TrainGame: #this will run a single game, return a result (reward/score), a
     def playgame(self):
         self.dealphase(self.start)
         points = self.getwinner()
-        return points, self.learner.turns
+        return points,self.start, self.learner.turns
 
     def interpret(self, card):  # will return a translated card value
         a, b = card
@@ -268,27 +268,40 @@ if (__name__ == "__main__"):
     vals = game.playgame()
     print(vals[0])
     x = 0
-    for i in vals[1][0]:
+    for i in vals[2][0]:
         x += 1
         print(x)
         print(i)
     x = 0
-    for i in vals[1][1]:
+    for i in vals[2][1]:
         x += 1
         print(x)
         print(i)
     x = 0
-    for i in vals[1][2]:
+    for i in vals[2][2]:
         x += 1
         print(x)
         print(i)
     x = 0
-    for i in vals[1][3]:
+    for i in vals[2][3]:
         x += 1
         print(x)
         print(i)
     x = 0
-    for i in vals[1][4]:
+    for i in vals[2][4]:
         x += 1
         print(x)
         print(i)
+
+def manipfirst(obj, points):#takes the first move training object(given its first element is True) and puts it into trainable form
+    assert(obj[0] == True)
+    
+    return
+
+def manipdraw(obj, points): #takes the first 2 elements of the returned data(the draw elements) and puts it into trainable form
+    _,_ = obj
+    return
+
+def manipdiscard(obj, points): #takes the last 3 elements of the returned data(the discard elements) and puts into trainable form
+    _,_,_ = obj
+    return
