@@ -248,7 +248,8 @@ class qlearner(agent):
         probs = self.discardnet(input).tolist()#add this to log
         print('probs', probs)
         self.turns[3].append(probs)
-        enum = enumerate(probs)
+        enum = list(enumerate(probs))
+        enum.sort(key = lambda x: x[1], reverse=True)
         for ind, cardoption in enum:
             translatedcard = self.hand.translatearray(ind)
             if(self.hand.isinhand(translatedcard)):

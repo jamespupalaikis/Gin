@@ -41,7 +41,7 @@ class TrainGame: #this will run a single game, return a result (reward/score), a
     def playgame(self):
         self.dealphase(self.start)
         points = self.getwinner()
-        return points,self.start, self.learner.turns
+        return points,self.learner.first, self.learner.turns
 
     def interpret(self, card):  # will return a translated card value
         a, b = card
@@ -154,10 +154,10 @@ class TrainGame: #this will run a single game, return a result (reward/score), a
                 print(f'discarded {self.interpret(dcard)}')
                 player.hand.discardto(dcard, self.discarddeck)  # TODO: implement this at agent level
                 player.sorthand()
-                player.updatemelds()
+                #player.updatemelds()
 
-                print(
-                    f"Current Melds: {self.interpretmelds(player.melds)}")  # recurse() gives (deadwoodvalue, [[melds], [deadwood']])
+                #print(
+                #    f"Current Melds: {self.interpretmelds(player.melds)}")  # recurse() gives (deadwoodvalue, [[melds], [deadwood']])
                 print(f"Deadwood value: {player.deadwood[0]}")
                 return
             elif (discardindex == 'quit'):
@@ -267,36 +267,14 @@ if (__name__ == "__main__"):
     game = TrainGame(p1,p2)
     vals = game.playgame()
     print(vals[0])
-    x = 0
-    for i in vals[2][0]:
-        x += 1
-        print(x)
-        print(i)
-    x = 0
-    for i in vals[2][1]:
-        x += 1
-        print(x)
-        print(i)
-    x = 0
-    for i in vals[2][2]:
-        x += 1
-        print(x)
-        print(i)
-    x = 0
-    for i in vals[2][3]:
-        x += 1
-        print(x)
-        print(i)
-    x = 0
-    for i in vals[2][4]:
-        x += 1
-        print(x)
-        print(i)
+    print(vals[1])
+
 
 def manipfirst(obj, points):#takes the first move training object(given its first element is True) and puts it into trainable form
     assert(obj[0] == True)
-    
-    return
+    status, state, move = obj
+    #ADD PENALTY HERE
+    return state, points*move/129
 
 def manipdraw(obj, points): #takes the first 2 elements of the returned data(the draw elements) and puts it into trainable form
     _,_ = obj

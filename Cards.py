@@ -206,7 +206,7 @@ class deck:
 
     def deal(self):
         top = self.deck.pop(0)
-        print('card removed')
+        #print('card removed')
         return top
 
     def peek(self):
@@ -216,15 +216,15 @@ class deck:
 
     def add(self, card):#add to the top of the deck
         self.deck = [card] + self.deck
-        print('card added')
+        #print('card added')
 
     def array(self, top = False):#return an 52 len array of 1 for the cards that are in the deck minus the top card if top = false (for backend use only)
         arr = np.zeros((4,13))
         for card in self.deck[1:]:
-            arr[card[0] - 1][card[1] -1] = 0
+            arr[card[0] - 1][card[1] -1] = 1
         if((top == True) and len(self.deck) > 0):
             top = self.deck[0]
-            arr[top[0] - 1][top[1] - 1] = 0
+            arr[top[0] - 1][top[1] - 1] = 1
 
         return arr.flatten()
 
