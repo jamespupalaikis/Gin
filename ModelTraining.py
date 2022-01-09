@@ -1,11 +1,21 @@
 #This will be an (eventually) headless implementation of PlayGame that plays games between a NN Qlearning AI and a given computer adversary
 #It will allow for training between each game based on a recorded game log of  moves made.
-
+import numpy as np
 
 import Cards as c
 from Cards import recurse
 import Agents as a
 import random as rand
+
+#######
+
+import torch
+from torch import nn
+from torch.utils.data import DataLoader, Dataset
+from torchvision import datasets
+from torchvision.transforms import ToTensor, Lambda, Compose
+
+import matplotlib.pyplot as plt
 
 class TrainGame: #this will run a single game, return a result (reward/score), and a set of moves made throughout the game
     def __init__(self, qlearner,player2 ):
@@ -260,14 +270,9 @@ class TrainGame: #this will run a single game, return a result (reward/score), a
                 print('enter a valid move!')
 
 
+########################################################################################################################
 
-if (__name__ == "__main__"):
-    p1 = a.qlearner(["models/trainingmodels/start_init.pth","models/trainingmodels/draw_init.pth","models/trainingmodels/discard_init.pth"]  )
-    p2 = a.betterrandom('Bobby')
-    game = TrainGame(p1,p2)
-    vals = game.playgame()
-    print(vals[0])
-    print(vals[1])
+
 
 
 def manipfirst(obj, points):#takes the first move training object(given its first element is True) and puts it into trainable form
@@ -276,10 +281,133 @@ def manipfirst(obj, points):#takes the first move training object(given its firs
     #ADD PENALTY HERE
     return state, points*move/129
 
-def manipdraw(obj, points): #takes the first 2 elements of the returned data(the draw elements) and puts it into trainable form
-    _,_ = obj
-    return
+def manipdraw(obj, points, turnpenalty = 0.95): #takes the first 2 elements of the returned data(the draw elements) and puts it into trainable form
+    state, move = obj
+    assert(len(state) == len(move))
+    state.reverse()
+    move.reverse()
+    mult = 1.0
+    for i in range(len(move)):
+        move[i] *= points * mult/129
+        mult *= turnpenalty
 
-def manipdiscard(obj, points): #takes the last 3 elements of the returned data(the discard elements) and puts into trainable form
-    _,_,_ = obj
-    return
+    return state, move
+
+
+def manipdiscard(obj, points, turnpenalty = 0.99): #takes the last 3 elements of the returned data(the discard elements) and puts into trainable form
+    state, baseprobs, choiceindex = obj
+    assert(len(baseprobs) == len(choiceindex))
+    state.reverse()
+    baseprobs.reverse()
+    choiceindex.reverse()
+    mult =1.0
+    for i in range(len(baseprobs)):
+        probs = baseprobs[i]
+        overflow = 10 #spread from the max 129 points you want in the label adjustment
+        val = (points+129)/(258 - 2*overflow)
+        val *= mult
+        val = max(val, 0)
+        val = min(val, 1)
+        probs[choiceindex[i]] = val
+        mult *= turnpenalty
+
+    return state, baseprobs
+
+
+class customData(Dataset):
+    def __init__(self,x,y):
+        x = np.array(x)
+        y = np.array(y)
+        self.X = torch.FloatTensor(x)
+        self.y = torch.FloatTensor(y)
+
+    def __len__(self):
+        return len(self.X)
+
+    def __getitem__(self, index):
+        xdat = self.X[index]
+        ydat = self.y[index]
+        return (xdat, ydat)
+
+def train(dataloader, model, loss_fn, optimizer):
+    size = len(dataloader.dataset)
+    model.train()
+    for batch, (x,y) in enumerate(dataloader):
+        x,y = x.to(device), y.to(device)
+        torch.unsqueeze(y, 1)
+        #compute error
+        pred = model(x)
+        loss = loss_fn(pred, y)
+
+        #backpropogate
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print(f"Using {device} device")
+
+
+
+
+def TrainCycle(loadfrom, saveto, opponent = a.betterrandom() ):
+    p1 = a.qlearner(loadfrom)
+    p2 = opponent
+    game = TrainGame(p1, p2)
+    points, firstvals, turnvals = game.playgame()
+    startnet, drawnet, discnet = p1.getmodels()
+    runfirst = False
+    #######################################################
+    if(firstvals[0] == True):
+        runfirst = True
+        first_x, first_y = manipfirst(firstvals, points)
+        trans_first = customData([first_x], [first_y])
+        first_data = DataLoader(trans_first, batch_size=1)
+        startnet = startnet.to(device)
+
+    draw_x, draw_y = manipdraw(turnvals[:2], points)
+    discard_x, discard_y = manipdiscard(turnvals[2:], points)
+
+    trans_draw = customData(draw_x, draw_y)
+    trans_disc = customData(discard_x, discard_y)
+    ###################################################
+
+    draw_data = DataLoader(trans_draw, batch_size=8)
+    discard_data = DataLoader(trans_disc, batch_size=8)
+    ###################################################
+    drawnet = drawnet.to(device)
+    discnet = discnet.to(device)
+    ###################################################
+    if(runfirst == True):
+        startepochs = 1
+        loss_fn, optimizer = torch.nn.MSELoss(), torch.optim.Adam(startnet.parameters(), lr=0.001)
+        model = startnet
+        for t in range(startepochs):
+            print('epoch ', t + 1, ' out of ', startepochs, ' Startnet')
+
+            train(first_data, model, loss_fn, optimizer)
+            #(acc, loss) = test(test_dataloader, model, loss_fn)
+
+    #######################################################
+    startepochs = 1
+    loss_fn, optimizer = torch.nn.MSELoss(), torch.optim.Adam(startnet.parameters(), lr=0.001)
+    model = drawnet
+    for t in range(startepochs):
+        print('epoch ', t + 1, ' out of ', startepochs, ' Drawnet')
+
+        train(draw_data, model, loss_fn, optimizer)
+        # (acc, loss) = test(test_dataloader, model, loss_fn)
+
+
+if (__name__ == "__main__"):
+    '''p1 = a.qlearner(["models/trainingmodels/start_init.pth","models/trainingmodels/draw_init.pth","models/trainingmodels/discard_init.pth"]  )
+    p2 = a.betterrandom('Bobby')
+    game = TrainGame(p1,p2)
+    vals = game.playgame()
+    print(vals[0])
+    print(vals[1])'''
+
+    loadfrom = ["models/trainingmodels/start_init.pth","models/trainingmodels/draw_init.pth","models/trainingmodels/discard_init.pth"]
+    TrainCycle(loadfrom, None)
+
+

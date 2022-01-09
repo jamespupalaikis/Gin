@@ -153,6 +153,9 @@ class qlearner(agent):
         self.turns = ([],[],[],[],[]) #turns will store a drawboardstate, a draw move (-1 or 1),, a discard boardstate, a set of discard weights, a
         # nd a discard move for a given turn
 
+    def getmodels(self):
+        return self.startnet, self.drawnet, self.discardnet
+
     def dealhand(self, deck):  # fills your hand from deck and updates the gamestate
         self.hand.starthand(deck)
         for drawn in self.hand.gethand():
@@ -259,3 +262,5 @@ class qlearner(agent):
 
 
         return
+
+
