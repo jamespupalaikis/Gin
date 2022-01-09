@@ -142,12 +142,13 @@ class qlearner(agent):
     def __init__(self,models,  name = 'GLaDOS'):
         agent.__init__(self, name)
 
-        self.startnet = mod.StartNet()
+        '''self.startnet = mod.StartNet()
         self.startnet.load_state_dict(torch.load(models[0]))
         self.drawnet = mod.DrawNet()
         self.drawnet.load_state_dict(torch.load(models[1]))
         self.discardnet = mod.DiscardNet()
-        self.discardnet.load_state_dict(torch.load(models[2]))
+        self.discardnet.load_state_dict(torch.load(models[2]))'''
+        self.startnet, self.drawnet, self.discardnet = models
         self.state = [np.zeros((4,13)),np.zeros((4,13))]#store as 2 2D lists: hand list of 4 suits * 13 cards, and discard list of same
         self.first = [False, np.zeros((104)), -1]#bool for if first move was made, 52 len array for hand, and sparse 52 array for the faceup card(all zeros except 1)
         self.turns = ([],[],[],[],[]) #turns will store a drawboardstate, a draw move (-1 or 1),, a discard boardstate, a set of discard weights, a
@@ -242,8 +243,6 @@ class qlearner(agent):
         if (dead <= 10):
             return 'k'
 
-
-
         #build input:
         brdstate = np.append(self.state[0].flatten(), discarddeck.array(top = True), 0)#boardstate WITH top card for log
         self.turns[2].append(brdstate)
@@ -258,6 +257,8 @@ class qlearner(agent):
             if(self.hand.isinhand(translatedcard)):
                 cardindex = ind #store this in log
                 self.turns[4].append(ind)
+
+                self.state[0][translatedcard[0] - 1][translatedcard[1] - 1] = 0  #remove the card from hand
                 return self.hand.findcard(translatedcard)
 
 

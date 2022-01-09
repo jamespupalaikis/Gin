@@ -6,6 +6,7 @@ import Cards as c
 from Cards import recurse
 import Agents as a
 import random as rand
+import BuildModel as mod
 
 #######
 
@@ -123,11 +124,13 @@ class TrainGame: #this will run a single game, return a result (reward/score), a
                 self.knocker = (self.learner, self.player2)
             else:
                 self.knocker = (self.player2, self.learner)
+            return True
         elif (len(deadvals) == 1):
             if (player == self.learner):
                 self.knocker = (self.learner, self.player2)
             else:
                 self.knocker = (self.player2, self.learner)
+            return True
         elif (sum(deadvals[:-1]) <= 10):
             if (player == self.learner):
                 self.knocker = (self.learner, self.player2)
@@ -334,7 +337,7 @@ def train(dataloader, model, loss_fn, optimizer):
     model.train()
     for batch, (x,y) in enumerate(dataloader):
         x,y = x.to(device), y.to(device)
-        torch.unsqueeze(y, 1)
+        y = torch.unsqueeze(y, 1)
         #compute error
         pred = model(x)
         loss = loss_fn(pred, y)
@@ -344,17 +347,28 @@ def train(dataloader, model, loss_fn, optimizer):
         loss.backward()
         optimizer.step()
 
+    if (batch % 1 == 0):
+        loss, current = loss.item(), batch * len(x)
+        print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
+
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Using {device} device")
 
 
+def savemodels(models, saveto):
+    startnet, drawnet, discnet = models
+    startloc, drawloc, discloc = saveto
+    torch.save(startnet.state_dict(), startloc)
+    torch.save(startnet.state_dict(), drawloc)
+    torch.save(startnet.state_dict(), discloc)
+    print('All Models Saved')
 
 
-def TrainCycle(loadfrom, saveto, opponent = a.betterrandom() ):
-    p1 = a.qlearner(loadfrom)
-    p2 = opponent
+def TrainCycle(p1,p2 ):
+
     game = TrainGame(p1, p2)
     points, firstvals, turnvals = game.playgame()
+    print(f'GameScore: {points}')
     startnet, drawnet, discnet = p1.getmodels()
     runfirst = False
     #######################################################
@@ -386,10 +400,11 @@ def TrainCycle(loadfrom, saveto, opponent = a.betterrandom() ):
             print('epoch ', t + 1, ' out of ', startepochs, ' Startnet')
 
             train(first_data, model, loss_fn, optimizer)
+
             #(acc, loss) = test(test_dataloader, model, loss_fn)
 
     #######################################################
-    startepochs = 1
+    startepochs = 2
     loss_fn, optimizer = torch.nn.MSELoss(), torch.optim.Adam(startnet.parameters(), lr=0.001)
     model = drawnet
     for t in range(startepochs):
@@ -397,6 +412,38 @@ def TrainCycle(loadfrom, saveto, opponent = a.betterrandom() ):
 
         train(draw_data, model, loss_fn, optimizer)
         # (acc, loss) = test(test_dataloader, model, loss_fn)
+
+#################################################################################################################
+
+    startepochs = 2
+    loss_fn, optimizer = torch.nn.MSELoss(), torch.optim.Adam(startnet.parameters(), lr=0.001)
+    model = discnet
+    for t in range(startepochs):
+        print('epoch ', t + 1, ' out of ', startepochs, ' Discardnet')
+
+        train(discard_data, model, loss_fn, optimizer)
+        # (acc, loss) = test(test_dataloader, model, loss_fn)
+
+def n_games(games , loadfrom, saveto, opponent = a.betterrandom() ):
+    startnet = mod.StartNet()
+    startnet.load_state_dict(torch.load(loadfrom[0]))
+    drawnet = mod.DrawNet()
+    drawnet.load_state_dict(torch.load(loadfrom[1]))
+    discardnet = mod.DiscardNet()
+    discardnet.load_state_dict(torch.load(loadfrom[2]))
+    models = [startnet, drawnet, discardnet]
+    p1 = a.qlearner(models)
+    p2 = opponent
+    for i in range(games):
+        print(f'game: {i + 1} out of {games}')
+        print('#*'*40)
+        TrainCycle(p1,p2)
+    savemodels(models, saveto)
+
+
+
+
+
 
 
 if (__name__ == "__main__"):
@@ -408,6 +455,7 @@ if (__name__ == "__main__"):
     print(vals[1])'''
 
     loadfrom = ["models/trainingmodels/start_init.pth","models/trainingmodels/draw_init.pth","models/trainingmodels/discard_init.pth"]
-    TrainCycle(loadfrom, None)
+    saveto = ["models/trainingmodels/start_1.pth","models/trainingmodels/draw_1.pth","models/trainingmodels/discard_1.pth"]
+    n_games(3,loadfrom, saveto)
 
 

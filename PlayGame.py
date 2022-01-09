@@ -106,11 +106,13 @@ class Gin:
                 self.knocker = (self.player1, self.player2)
             else:
                 self.knocker = (self.player2, self.player1)
+            return True
         elif(len(deadvals) == 1):
             if (player == self.player1):
                 self.knocker = (self.player1, self.player2)
             else:
                 self.knocker = (self.player2, self.player1)
+            return True
         elif(sum(deadvals[:-1]) <= 10):
             if(player == self.player1):
                 self.knocker = (self.player1, self.player2)
