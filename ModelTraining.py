@@ -432,9 +432,10 @@ def n_games(games , loadfrom, saveto, opponent = a.betterrandom() ):
     discardnet = mod.DiscardNet()
     discardnet.load_state_dict(torch.load(loadfrom[2]))
     models = [startnet, drawnet, discardnet]
-    p1 = a.qlearner(models)
-    p2 = opponent
+
     for i in range(games):
+        p1 = a.qlearner(models)
+        p2 = opponent
         print(f'game: {i + 1} out of {games}')
         print('#*'*40)
         TrainCycle(p1,p2)
