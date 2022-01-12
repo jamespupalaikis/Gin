@@ -3,6 +3,7 @@ import ModelTraining as m
 import Agents as a
 import BuildModel as mod
 import torch
+import numpy as np
 
 mydick = c.deck(empty = True)
 mydick.add((1,1))
@@ -41,21 +42,9 @@ for i in vals[2][4]:
     print(i)'''
 
 
-a = [1,1,1,1,1]
-a.reverse()
-penalty = 0.99
-mult = 1
-labels = []
-for i in range(len(a)):
-    a[i] *= mult
-    mult *= penalty
+a = [-21,-7,22]
 
-print(a[2:])
+np.savetxt('pointslist.csv', a)
 
-drawnet = mod.DrawNet()
-startnet = mod.StartNet()
-#print(drawnet)
-a = torch.load("models/trainingmodels/draw_1.pth")
-startnet.load_state_dict(a)
 
 #print(a)
