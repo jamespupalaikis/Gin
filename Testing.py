@@ -1,8 +1,8 @@
 import Cards as c
 import ModelTraining as m
 import Agents as a
-import BuildModel as b
-
+import BuildModel as mod
+import torch
 
 mydick = c.deck(empty = True)
 mydick.add((1,1))
@@ -51,3 +51,11 @@ for i in range(len(a)):
     mult *= penalty
 
 print(a[2:])
+
+drawnet = mod.DrawNet()
+startnet = mod.StartNet()
+#print(drawnet)
+a = torch.load("models/trainingmodels/draw_1.pth")
+startnet.load_state_dict(a)
+
+#print(a)
