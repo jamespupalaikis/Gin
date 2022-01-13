@@ -48,6 +48,14 @@ class agent:
     def deadvals(self):
         return [c.valuedict[card[1]] for card in self.deadwood[1]]
 
+    def singlearray(self, c):#returns a sparsely populated 52 len array with a 1 for a single card
+        a = np.zeros((52))
+        index = 0
+        index += (c[0] - 1) * 13
+        index += c[1]
+        index -= 1
+        a[index] = 1
+        return a #this is a little hamfisted, maybe clean up later
 
 class textplayer(agent):
     def __init__(self, name = 'Human Text Guy' ):
@@ -175,14 +183,7 @@ class qlearner(agent):
     #ADD TO TURN LOG
 
 
-    def singlearray(self, c):#returns a sparsely populated 52 len array with a 1 for a single card
-        a = np.zeros((52))
-        index = 0
-        index += (c[0] - 1) * 13
-        index += c[1]
-        index -= 1
-        a[index] = 1
-        return a #this is a little hamfisted, maybe clean up later
+
 
 
     def initialmove(self, discarddeck):#check whether the card creates any runs, or matches the value of any held cards
@@ -271,3 +272,93 @@ class forcetrainer(agent):#takes on decision tree based behaviour, logs moves, a
         self.turns = ([],[],[],[],[]) #turns will store a drawboardstate, a draw move (-1 or 1),, a discard boardstate, a set of discard weights, a
         # nd a discard move for a given turn
 
+    def getmodels(self):
+        return self.startnet, self.drawnet, self.discardnet
+
+    def dealhand(self, deck):  # fills your hand from deck and updates the gamestate
+        self.hand.starthand(deck)
+        for drawn in self.hand.gethand():
+            self.state[0][drawn[0] - 1][drawn[1] - 1] = 1#update hand state
+
+    def initialmove(self, discarddeck):#check whether the card creates any runs, or matches the value of any held cards
+        top = discarddeck.peek()
+        toparr = self.singlearray(top)
+        brdstate = np.append(self.state[0].flatten(), toparr, 0)#boardstate to add to self.first
+        move = 'pass'
+        for card in self.hand.gethand():
+            if(card[1] == discarddeck.peek()[1]):#check for same face value
+                move = "draw"
+
+
+        self.first[0] = True
+        self.first[1] = brdstate
+        if(move < 0):
+            self.first[2] = -1
+
+            return 'pass'
+        else:
+            self.first[2] = 1
+            #DO NOT add to hand state, just do it at the beginning of the discard
+
+            return 'draw'
+
+
+    def drawmove(self,discarddeck):
+        top = discarddeck.peek()
+        toparr = self.singlearray(top)
+        brdstate = np.append(self.state[0].flatten(), discarddeck.array(), 0)#boardstate minus top card
+        brdstate2 = np.append(brdstate, toparr, 0)#boardstate to add to log
+        #TODO: Make "does it make a meld" function to assess faceup cards
+        move = '1'
+        for card in self.hand.gethand():
+            if(card[1] == discarddeck.peek()[1]):#check for same face value
+                move =  '2'
+
+        #move = self.drawnet(input)[0].item()
+        self.turns[0].append(brdstate2)
+        if (move== '2'):#draw from discard pile
+            # ADD TO LOG
+            self.turns[1].append(-1)
+            #DO NOT add to hand state, just do it at the beginning of the discard
+            return '2'
+        else:#draw from facedown pile
+            # ADD TO LOG
+            self.turns[1].append(1)
+            return '1'
+
+
+    def discardmove(self,discarddeck):
+        last = self.gethand()[-1]
+        assert (self.state[0][last[0] - 1][last[1] - 1] == 0)  # shouldnt be in hand before
+        self.state[0][last[0] - 1][last[1] - 1] = 1  # set hand value to 1
+        self.updatemelds()
+        deadv = self.deadvals()
+        deadv.sort()
+        dead = sum(deadv[:-1])
+        if (dead <= 10):
+            return 'k'
+    ################TODO: make this more sophisticated
+        card = rand.choice(self.deadwood[1])
+        # move =  str(self.hand.findcard(card)) 
+        probs = self.singlearray(card)
+    ###########################
+        #build input:
+        brdstate = np.append(self.state[0].flatten(), discarddeck.array(top = True), 0)#boardstate WITH top card for log
+        self.turns[2].append(brdstate)
+
+
+        print('probs', probs)
+        self.turns[3].append(probs)
+        enum = list(enumerate(probs))
+        enum.sort(key = lambda x: x[1], reverse=True)
+        for ind, cardoption in enum:
+            translatedcard = self.hand.translatearray(ind)
+            if(self.hand.isinhand(translatedcard)):
+                cardindex = ind #store this in log
+                self.turns[4].append(ind)
+
+                self.state[0][translatedcard[0] - 1][translatedcard[1] - 1] = 0  #remove the card from hand
+                return self.hand.findcard(translatedcard)
+
+
+        return

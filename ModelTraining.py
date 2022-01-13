@@ -446,7 +446,7 @@ def TrainCycle(p1,p2 ):
     # RETURN vals and labels, to assemble back together and train on
     return points
 
-def n_games(games , loadfrom, saveto, opponent = a.betterrandom(),  interval = 10, fromsave= False, addtopoints = True ):
+def n_games(games , loadfrom, saveto, p1 = a.qlearner, opponent = a.betterrandom(),  interval = 10, fromsave= False, addtopoints = True ):
     backup = ["models/trainingmodels/start_backup.pth", "models/trainingmodels/draw_backup.pth",
               "models/trainingmodels/discard_backup.pth"]
     if(fromsave == True):
@@ -460,7 +460,7 @@ def n_games(games , loadfrom, saveto, opponent = a.betterrandom(),  interval = 1
     models = [startnet, drawnet, discardnet]
     pts = []
     for i in range(games):
-        p1 = a.qlearner(models)
+        p1 = p1(models)
         p2 = opponent
         print(f'game: {i + 1} out of {games}')
         print(' ')
@@ -491,10 +491,10 @@ if (__name__ == "__main__"):
     print(vals[0])
     print(vals[1])'''
 
-    #loadfrom = ["models/trainingmodels/start_init.pth","models/trainingmodels/draw_init.pth","models/trainingmodels/discard_init.pth"]
-    saveto = ["models/trainingmodels/start_1.pth","models/trainingmodels/draw_1.pth","models/trainingmodels/discard_1.pth"]
+    loadfrom = ["models/trainingmodels/start_init.pth","models/trainingmodels/draw_init.pth","models/trainingmodels/discard_init.pth"]
+    #saveto = ["models/trainingmodels/start_1.pth","models/trainingmodels/draw_1.pth","models/trainingmodels/discard_1.pth"]
     #loadfrom = ["models/trainingmodels/start_1.pth","models/trainingmodels/draw_1.pth","models/trainingmodels/discard_1.pth"]
     # saveto2 = ["models/trainingmodels/start_2.pth","models/trainingmodels/draw_2.pth","models/trainingmodels/discard_2.pth"]
-    loadfrom = ["models/trainingmodels/start_0.pth", "models/trainingmodels/draw_0.pth", "models/trainingmodels/discard_0.pth"]
-    n_games(100,loadfrom, saveto, opponent=a.randombot(),addtopoints= False)# fromsave= True)
+    saveto = ["models/trainingmodels/start_0.pth", "models/trainingmodels/draw_0.pth", "models/trainingmodels/discard_0.pth"]
+    n_games(1,loadfrom, saveto, p1 = a.forcetrainer, opponent=a.randombot())#,addtopoints= False)# fromsave= True)
 
