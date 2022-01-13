@@ -141,13 +141,6 @@ class simpletree(agent):
 class qlearner(agent):
     def __init__(self,models,  name = 'GLaDOS'):
         agent.__init__(self, name)
-
-        '''self.startnet = mod.StartNet()
-        self.startnet.load_state_dict(torch.load(models[0]))
-        self.drawnet = mod.DrawNet()
-        self.drawnet.load_state_dict(torch.load(models[1]))
-        self.discardnet = mod.DiscardNet()
-        self.discardnet.load_state_dict(torch.load(models[2]))'''
         self.startnet, self.drawnet, self.discardnet = models
         self.state = [np.zeros((4,13)),np.zeros((4,13))]#store as 2 2D lists: hand list of 4 suits * 13 cards, and discard list of same
         self.first = [False, np.zeros((104)), -1]#bool for if first move was made, 52 len array for hand, and sparse 52 array for the faceup card(all zeros except 1)
@@ -264,4 +257,17 @@ class qlearner(agent):
 
         return
 
+
+#################################################################################################################3
+
+class forcetrainer(agent):#takes on decision tree based behaviour, logs moves, and aggressively trains decisions nns with it
+    def __init__(self, models, name='Puppet'):
+        agent.__init__(self, name)
+
+
+        self.startnet, self.drawnet, self.discardnet = models
+        self.state = [np.zeros((4,13)),np.zeros((4,13))]#store as 2 2D lists: hand list of 4 suits * 13 cards, and discard list of same
+        self.first = [False, np.zeros((104)), -1]#bool for if first move was made, 52 len array for hand, and sparse 52 array for the faceup card(all zeros except 1)
+        self.turns = ([],[],[],[],[]) #turns will store a drawboardstate, a draw move (-1 or 1),, a discard boardstate, a set of discard weights, a
+        # nd a discard move for a given turn
 

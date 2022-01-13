@@ -420,9 +420,9 @@ def TrainCycle(p1,p2 ):
 
     #######################################################
     startepochs = 10
-    optimizer =  torch.optim.Adam(startnet.parameters(), lr=0.005)
-    loss_fn = torch.nn.CrossEntropyLoss()
-    #loss_fn = torch.nn.MSELoss()
+    optimizer =  torch.optim.Adam(startnet.parameters(), lr=0.01)
+    #loss_fn = torch.nn.CrossEntropyLoss()
+    loss_fn = torch.nn.MSELoss()
     model = drawnet
     for t in range(startepochs):
         print('epoch ', t + 1, ' out of ', startepochs, ' Drawnet')
@@ -433,9 +433,9 @@ def TrainCycle(p1,p2 ):
 #################################################################################################################
 
     startepochs = 10
-    optimizer = torch.optim.Adam(startnet.parameters(), lr=0.005)
-    loss_fn = torch.nn.BCELoss()
-    #loss_fn = torch.nn.MSELoss()
+    optimizer = torch.optim.Adam(startnet.parameters(), lr=0.01)
+    #loss_fn = torch.nn.BCELoss()
+    loss_fn = torch.nn.MSELoss()
     model = discnet
     for t in range(startepochs):
         print('epoch ', t + 1, ' out of ', startepochs, ' Discardnet')
@@ -491,10 +491,10 @@ if (__name__ == "__main__"):
     print(vals[0])
     print(vals[1])'''
 
-    loadfrom = ["models/trainingmodels/start_init.pth","models/trainingmodels/draw_init.pth","models/trainingmodels/discard_init.pth"]
-    #saveto = ["models/trainingmodels/start_1.pth","models/trainingmodels/draw_1.pth","models/trainingmodels/discard_1.pth"]
+    #loadfrom = ["models/trainingmodels/start_init.pth","models/trainingmodels/draw_init.pth","models/trainingmodels/discard_init.pth"]
+    saveto = ["models/trainingmodels/start_1.pth","models/trainingmodels/draw_1.pth","models/trainingmodels/discard_1.pth"]
     #loadfrom = ["models/trainingmodels/start_1.pth","models/trainingmodels/draw_1.pth","models/trainingmodels/discard_1.pth"]
     # saveto2 = ["models/trainingmodels/start_2.pth","models/trainingmodels/draw_2.pth","models/trainingmodels/discard_2.pth"]
-    saveto = ["models/trainingmodels/start_0.pth", "models/trainingmodels/draw_0.pth", "models/trainingmodels/discard_0.pth"]
-    n_games(30,loadfrom, saveto, opponent=a.randombot(),addtopoints= False)# fromsave= True)
+    loadfrom = ["models/trainingmodels/start_0.pth", "models/trainingmodels/draw_0.pth", "models/trainingmodels/discard_0.pth"]
+    n_games(100,loadfrom, saveto, opponent=a.randombot(),addtopoints= False)# fromsave= True)
 

@@ -4,6 +4,7 @@ import Agents as a
 import BuildModel as mod
 import torch
 import numpy as np
+import matplotlib.pyplot as plt
 
 mydick = c.deck(empty = True)
 mydick.add((1,1))
@@ -42,9 +43,8 @@ for i in vals[2][4]:
     print(i)'''
 
 
-a = [-21,-7,22]
-
-np.savetxt('pointslist.csv', a)
 
 
+plt.plot([-29, -51, 55, 34, -31, 56, -7, 43, 70, 8, 64, 33, -17, 48, -12, -16, 27, 31, 41, -33, 35, 37, 3, -32, -18, -30, -30, -1, 55, 41, 69, -3, 27, -15, 13, -29, 33, 58, -6, 58, 29, -16, 29, 36, -31, 81, -15, 55, -9, 22, 65, -14, 54, 31, 32, 40, -3, 31, -11, 2, -26, 1, -7, 36, 36, 46, 27, 38, 50, -4, 43, -6, 41, 27, 27, -5, -3, -1, 36, 50, 44, -8, 57, -11, -44, -11, -7, 42, -29, 26, 29, -10, 34, 62, -14, 58, 49, 31, 29, -19] )
+plt.show()
 #print(a)
