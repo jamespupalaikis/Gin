@@ -295,7 +295,9 @@ class forcetrainer(agent):#takes on decision tree based behaviour, logs moves, a
     def initialmove(self, discarddeck):#check whether the card creates any runs, or matches the value of any held cards
         top = discarddeck.peek()
         toparr = self.singlearray(top)
-        brdstate = np.append(self.state[0].flatten(), toparr, 0)#boardstate to add to self.first
+        brdstate = np.zeros((2, 4, 13))
+        brdstate[0] = self.state[0]
+        brdstate[1] = toparr
         move = 'pass'
         for card in self.hand.gethand():
             if(card[1] == discarddeck.peek()[1]):#check for same face value
@@ -304,7 +306,7 @@ class forcetrainer(agent):#takes on decision tree based behaviour, logs moves, a
 
         self.first[0] = True
         self.first[1] = brdstate
-        if(move < 0):
+        if(move == 'pass'):
             self.first[2] = -1
 
             return 'pass'
@@ -318,16 +320,19 @@ class forcetrainer(agent):#takes on decision tree based behaviour, logs moves, a
     def drawmove(self,discarddeck):
         top = discarddeck.peek()
         toparr = self.singlearray(top)
-        brdstate = np.append(self.state[0].flatten(), discarddeck.array(), 0)#boardstate minus top card
-        brdstate2 = np.append(brdstate, toparr, 0)#boardstate to add to log
-        #TODO: Make "does it make a meld" function to assess faceup cards
+        brd = np.zeros((3, 4, 13))
+        brd[0] = self.state[0]
+        brd[1] = discarddeck.array()
+        brd[2] = toparr
+        # brdstate = np.append(self.state[0].flatten(), discarddeck.array(), 0)#boardstate minus top card
+        # brdstate2 = np.append(brdstate, toparr, 0)#boardstate to add to log
         move = '1'
         for card in self.hand.gethand():
             if(card[1] == discarddeck.peek()[1]):#check for same face value
                 move =  '2'
 
         #move = self.drawnet(input)[0].item()
-        self.turns[0].append(brdstate2)
+        self.turns[0].append(brd)
         if (move== '2'):#draw from discard pile
             # ADD TO LOG
             self.turns[1].append(-1)
@@ -352,11 +357,13 @@ class forcetrainer(agent):#takes on decision tree based behaviour, logs moves, a
     ################TODO: make this more sophisticated
         card = rand.choice(self.deadwood[1])
         # move =  str(self.hand.findcard(card))
-        probs = self.singlearray(card)
+        probs = self.singlearray(card).flatten()
     ###########################
         #build input:
-        brdstate = np.append(self.state[0].flatten(), discarddeck.array(top = True), 0)#boardstate WITH top card for log
-        self.turns[2].append(brdstate)
+        brd = np.zeros((2, 4, 13))
+        brd[0] = self.state[0]
+        brd[1] = discarddeck.array(top=True)
+        self.turns[2].append(brd)
 
 
         print('probs', probs)
