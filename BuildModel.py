@@ -64,25 +64,44 @@ class DrawNet(nn.Module):
     def __init__(self):
         super(DrawNet, self).__init__()
         self.flatten = nn.Flatten()
-        self.linear_relu_stack = nn.Sequential(
-            nn.Linear(52+52 + 52, 128),
+        self.cnns = nn.Sequential(
+
+            nn.Conv2d(3, 32, kernel_size=3, padding='same'),
             nn.ReLU(),
-            nn.Linear(128,128),
+            nn.Conv2d(32, 64, kernel_size=3, stride=1, padding='same'),
+            nn.ReLU()
+            #nn.Linear(52+52 + 52, 128),
+            #nn.ReLU(),
+            #nn.Linear(128,128),
+            #nn.ReLU(),
+            #nn.Linear(128,1)
+        )
+        self.linear = nn.Sequential(
+            nn.Linear(3328,64),
             nn.ReLU(),
-            nn.Linear(128,1)
+            nn.Linear(64,1)
+
         )
 
+
     def forward(self,x):
-        #x = self.flatten(x)
-        logits = self.linear_relu_stack(x)
+        x = self.cnns(x)
+        x = self.flatten(x)
+        logits = self.linear(x)
         return logits
 
 class DiscardNet(nn.Module):
     def __init__(self):
         super(DiscardNet, self).__init__()
         self.flatten = nn.Flatten()
+        self.cnns = nn.Sequential(
+            nn.Conv2d(2, 32, kernel_size=3, padding='same'),
+            nn.ReLU(),
+            nn.Conv2d(32, 64, kernel_size=3, stride=1, padding='same'),
+            nn.ReLU())
+
         self.linear_relu_stack = nn.Sequential(
-            nn.Linear(52 + 52 , 128),
+            nn.Linear(3328 , 128),
             nn.ReLU(),
             nn.Linear(128, 128),
             nn.ReLU(),
@@ -91,7 +110,9 @@ class DiscardNet(nn.Module):
         )
 
     def forward(self,x):
-        #x = self.flatten(x)
+        #
+        x = self.cnns(x)
+        x = self.flatten(x)
         logits = self.linear_relu_stack(x)
         return logits
 

@@ -339,7 +339,7 @@ class forcetrainer(agent):#takes on decision tree based behaviour, logs moves, a
             return 'k'
     ################TODO: make this more sophisticated
         card = rand.choice(self.deadwood[1])
-        # move =  str(self.hand.findcard(card)) 
+        # move =  str(self.hand.findcard(card))
         probs = self.singlearray(card)
     ###########################
         #build input:
