@@ -49,13 +49,15 @@ class agent:
         return [c.valuedict[card[1]] for card in self.deadwood[1]]
 
     def singlearray(self, c):#returns a sparsely populated 52 len array with a 1 for a single card
-        a = np.zeros((52))
-        index = 0
+        a = np.zeros((4,13))
+        a[c[0] -1][c[1] - 1] = 1
+        '''index = 0
         index += (c[0] - 1) * 13
         index += c[1]
         index -= 1
         a[index] = 1
-        return a #this is a little hamfisted, maybe clean up later
+        return a #this is a little hamfisted, maybe clean up later'''
+        return a
 
 class textplayer(agent):
     def __init__(self, name = 'Human Text Guy' ):
@@ -189,8 +191,11 @@ class qlearner(agent):
     def initialmove(self, discarddeck):#check whether the card creates any runs, or matches the value of any held cards
         top = discarddeck.peek()
         toparr = self.singlearray(top)
-        brdstate = np.append(self.state[0].flatten(), toparr, 0)#boardstate to add to self.first
-        input = torch.tensor(brdstate).float()
+        brdstate = np.zeros((2,4,13))
+        #brdstate = np.append(self.state[0].flatten(), toparr, 0)#boardstate to add to self.first
+        brdstate[0] = self.state[0]
+        brdstate[1] = toparr
+        input = torch.tensor(brdstate).float().unsqueeze(0)
         move = self.startnet(input)[0].item()
         self.first[0] = True
         self.first[1] = brdstate
@@ -207,11 +212,15 @@ class qlearner(agent):
     def drawmove(self,discarddeck):
         top = discarddeck.peek()
         toparr = self.singlearray(top)
-        brdstate = np.append(self.state[0].flatten(), discarddeck.array(), 0)#boardstate minus top card
-        brdstate2 = np.append(brdstate, toparr, 0)#boardstate to add to log
-        input = torch.tensor(brdstate2).float()
+        brd = np.zeros((3,4,13))
+        brd[0] = self.state[0]
+        brd[1] = discarddeck.array()
+        brd[2] = toparr
+        #brdstate = np.append(self.state[0].flatten(), discarddeck.array(), 0)#boardstate minus top card
+        #brdstate2 = np.append(brdstate, toparr, 0)#boardstate to add to log
+        input = torch.tensor(brd).float().unsqueeze(0)
         move = self.drawnet(input)[0].item()
-        self.turns[0].append(brdstate2)
+        self.turns[0].append(brd)
         if (move < 0):#draw from discard pile
             # ADD TO LOG
             self.turns[1].append(-1)
@@ -238,10 +247,13 @@ class qlearner(agent):
             return 'k'
 
         #build input:
-        brdstate = np.append(self.state[0].flatten(), discarddeck.array(top = True), 0)#boardstate WITH top card for log
-        self.turns[2].append(brdstate)
-        input = torch.tensor(brdstate).float()
-        probs = self.discardnet(input).tolist()#add this to log
+        brd = np.zeros((2,4,13))
+        brd[0] = self.state[0]
+        brd[1] = discarddeck.array(top = True)
+        #brdstate = np.append(self.state[0].flatten(), discarddeck.array(top = True), 0)#boardstate WITH top card for log
+        self.turns[2].append(brd)
+        input = torch.tensor(brd).float().unsqueeze(0)
+        probs = self.discardnet(input).tolist()[0]#add this to log
         print('probs', probs)
         self.turns[3].append(probs)
         enum = list(enumerate(probs))

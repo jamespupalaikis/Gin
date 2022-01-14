@@ -51,5 +51,8 @@ for i in vals[2][4]:
 
 
 dn = mod.DiscardNet()
-print(get_output_shape(dn, (2,4,13)))
+#print(get_output_shape(dn, (2,4,13)))
+brd = np.zeros((2,4,13))
+input = torch.tensor(brd).float().unsqueeze(0)
+print(dn(input))
 #print(a)

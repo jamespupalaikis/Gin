@@ -381,6 +381,7 @@ def TrainCycle(p1,p2 ):
 
     game = TrainGame(p1, p2)
     points, firstvals, turnvals = game.playgame()
+
     print(f'GameScore: {points}')
     startnet, drawnet, discnet = p1.getmodels()
     runfirst = False
@@ -496,5 +497,5 @@ if (__name__ == "__main__"):
     #loadfrom = ["models/trainingmodels/start_1.pth","models/trainingmodels/draw_1.pth","models/trainingmodels/discard_1.pth"]
     # saveto2 = ["models/trainingmodels/start_2.pth","models/trainingmodels/draw_2.pth","models/trainingmodels/discard_2.pth"]
     saveto = ["models/trainingmodels/start_0.pth", "models/trainingmodels/draw_0.pth", "models/trainingmodels/discard_0.pth"]
-    n_games(1,loadfrom, saveto, p1 = a.forcetrainer, opponent=a.randombot())#,addtopoints= False)# fromsave= True)
+    n_games(1,loadfrom, saveto, p1 = a.qlearner, opponent=a.randombot())#,addtopoints= False)# fromsave= True)
 

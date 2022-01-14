@@ -54,11 +54,23 @@ class StartNet(nn.Module):
             nn.Linear(64,1)
 
         )
+        self.cnns = nn.Sequential(
+            nn.Conv2d(2, 32, kernel_size=3, padding='same'),
+            nn.ReLU(),
+            nn.Conv2d(32, 64, kernel_size=3, stride=1, padding='same'),
+            nn.ReLU())
+        self.linear = nn.Sequential(
+            nn.Linear(3328,16),
+            nn.ReLU(),
+            nn.Linear(16,1)
+
+        )
 
     def forward(self,x):
-        #x = self.flatten(x)
-        logits = self.linear_relu_stack(x)
-        return logits
+        x = self.cnns(x)
+        x = self.flatten(x)
+        x = self.linear(x)
+        return x# logits
 
 class DrawNet(nn.Module):
     def __init__(self):
@@ -106,7 +118,7 @@ class DiscardNet(nn.Module):
             nn.Linear(128, 128),
             nn.ReLU(),
             nn.Linear(128, 52),
-            nn.Softmax(dim=0)
+            nn.Softmax()
         )
 
     def forward(self,x):
@@ -131,12 +143,12 @@ if (__name__ == "__main__"):
     print("Saved PyTorch Model State to models/trainingmodels/discard_init.pth")
 #x = np.ndarray*[[0 for i in range(104)]]
 #x = torch.tensor(np.expand_dims(np.append(np.zeros((52,1)),(np.zeros((52,1))), 0), -1) )
-    x = torch.tensor((np.append(np.zeros((52,) ),(np.zeros((52,))), 0)) )
-    print(x.shape)
+    #x = torch.tensor((np.append(np.zeros((52,) ),(np.zeros((52,))), 0)) )
+    #print(x.shape)
 #x = torch.tensor(x)
-    pred = discardnet(x.float())
-    print(pred)
-    print(list(enumerate(pred.tolist())))
+    #pred = discardnet(x.float())
+    #print(pred)
+    #print(list(enumerate(pred.tolist())))
 
 
 #print(51//13 + 1)

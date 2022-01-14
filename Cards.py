@@ -226,7 +226,7 @@ class deck:
             top = self.deck[0]
             arr[top[0] - 1][top[1] - 1] = 1
 
-        return arr.flatten()
+        return arr
 
 
 
