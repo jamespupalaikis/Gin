@@ -41,7 +41,8 @@ class TrainGame: #this will run a single game, return a result (reward/score), a
             self.start = self.player2
 
 
-
+        self.learner.updatemelds()
+        self.player2.updatemelds()
         #points for player 1
         #points = self.getwinner()
         #result = self.win(points)
@@ -72,8 +73,12 @@ class TrainGame: #this will run a single game, return a result (reward/score), a
 
 
     def getwinner(self):
-        p1 = recurse(self.learner.gethand())[0]  # points for player 1
-        p2 = recurse(self.player2.gethand())[0]  # ... player 2
+        self.learner.updatemelds()
+        self.player2.updatemelds()
+        #p1 = recurse(self.learner.gethand())[0]  # points for player 1
+        #p2 = recurse(self.player2.gethand())[0]  # ... player 2
+        p1 = self.learner.deadwood[0]
+        p2 = self.player2.deadwood[0]
         if (p1 < p2):
             points = p2 - p1
             if (self.knocker[0] == self.player2):
@@ -119,6 +124,8 @@ class TrainGame: #this will run a single game, return a result (reward/score), a
         deadwood = player.deadwood[1]
         deadvals = [c.valuedict[card[1]] for card in deadwood]
         deadvals.sort()
+        print('dead: ', deadvals)
+        print('melds: ', player.melds)
         if (len(deadvals) == 0):
             if (player == self.learner):
                 self.knocker = (self.learner, self.player2)
@@ -156,6 +163,10 @@ class TrainGame: #this will run a single game, return a result (reward/score), a
             if (isinstance(discardindex, str)):
                 tryknock = self.knock(player)
                 if (tryknock == True):  # knock accepted
+                    print('knock accepted')
+                    print(player.deadwood)
+                    player.hand.discardto(player.gethighdeadcard(), self.discarddeck)
+                    print(player.deadwood)
                     return
                 print("You can't knock right now!!!!")
 
@@ -447,7 +458,7 @@ def TrainCycle(p1,p2 ):
     # RETURN vals and labels, to assemble back together and train on
     return points
 
-def n_games(games , loadfrom, saveto, p1 = a.qlearner, opponent = a.betterrandom(),  interval = 10, fromsave= False, addtopoints = True ):
+def n_games(games , loadfrom, saveto, player1 = a.qlearner, opponent = a.betterrandom(),  interval = 10, fromsave= False, addtopoints = True ):
     backup = ["models/trainingmodels/start_backup.pth", "models/trainingmodels/draw_backup.pth",
               "models/trainingmodels/discard_backup.pth"]
     if(fromsave == True):
@@ -461,7 +472,8 @@ def n_games(games , loadfrom, saveto, p1 = a.qlearner, opponent = a.betterrandom
     models = [startnet, drawnet, discardnet]
     pts = []
     for i in range(games):
-        p1 = p1(models)
+        
+        p1 = player1(models)
         p2 = opponent
         print(f'game: {i + 1} out of {games}')
         print(' ')
@@ -497,5 +509,5 @@ if (__name__ == "__main__"):
     #loadfrom = ["models/trainingmodels/start_1.pth","models/trainingmodels/draw_1.pth","models/trainingmodels/discard_1.pth"]
     # saveto2 = ["models/trainingmodels/start_2.pth","models/trainingmodels/draw_2.pth","models/trainingmodels/discard_2.pth"]
     saveto = ["models/trainingmodels/start_0.pth", "models/trainingmodels/draw_0.pth", "models/trainingmodels/discard_0.pth"]
-    n_games(1,loadfrom, saveto, p1 = a.forcetrainer, opponent=a.randombot())#,addtopoints= False)# fromsave= True)
+    n_games(30,loadfrom, saveto, player1 = a.forcetrainer, opponent=a.randombot(),addtopoints= False)# fromsave= True)
 

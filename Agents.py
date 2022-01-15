@@ -59,6 +59,20 @@ class agent:
         return a #this is a little hamfisted, maybe clean up later'''
         return a
 
+    def gethighdeadcard(self):
+        cards = self.deadwood[1] 
+        highest = (0, None)
+        for card in cards:
+            v = c.valuedict[card[1]]
+            if (v > highest[0]):
+                highest = (v, card)
+        return highest[1]
+                
+            
+
+
+
+###############################
 class textplayer(agent):
     def __init__(self, name = 'Human Text Guy' ):
         agent.__init__(self, name)
