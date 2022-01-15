@@ -509,5 +509,5 @@ if (__name__ == "__main__"):
     #loadfrom = ["models/trainingmodels/start_1.pth","models/trainingmodels/draw_1.pth","models/trainingmodels/discard_1.pth"]
     # saveto2 = ["models/trainingmodels/start_2.pth","models/trainingmodels/draw_2.pth","models/trainingmodels/discard_2.pth"]
     saveto = ["models/trainingmodels/start_0.pth", "models/trainingmodels/draw_0.pth", "models/trainingmodels/discard_0.pth"]
-    n_games(30,loadfrom, saveto, player1 = a.forcetrainer, opponent=a.randombot(),addtopoints= False)# fromsave= True)
+    n_games(30,saveto, saveto, player1 = a.forcetrainer, opponent=a.randombot(),addtopoints= False)# fromsave= True)
 
