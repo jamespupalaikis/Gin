@@ -362,7 +362,7 @@ def train(dataloader, model, loss_fn, optimizer):
         if((pred.size() != y.size())):
             y = y.reshape(tuple(pred.size()))
         loss = loss_fn(pred, y)
-
+        print('loss: ', loss)
         #backpropogate
         optimizer.zero_grad()
         loss.backward()
@@ -419,40 +419,40 @@ def TrainCycle(p1,p2 ):
     ###################################################
     if(runfirst == True):
         startepochs = 1
-        optimizer = torch.optim.Adam(startnet.parameters(), lr=0.005)
+        startoptimizer = torch.optim.Adam(startnet.parameters(), lr=0.005)
         # loss_fn = torch.nn.CrossEntropyLoss()
-        loss_fn = torch.nn.MSELoss()
-        model = startnet
+        startloss_fn = torch.nn.MSELoss()
+        startmodel = startnet
         for t in range(startepochs):
             print('epoch ', t + 1, ' out of ', startepochs, ' Startnet')
 
-            train(first_data, model, loss_fn, optimizer)
+            train(first_data, startmodel, startloss_fn, startoptimizer)
 
             #(acc, loss) = test(test_dataloader, model, loss_fn)
 
     #######################################################
-    startepochs = 10
-    optimizer =  torch.optim.Adam(startnet.parameters(), lr=0.01)
+    drawepochs = 10
+    drawoptimizer =  torch.optim.Adam(drawnet.parameters(), lr=0.01)
     #loss_fn = torch.nn.CrossEntropyLoss()
-    loss_fn = torch.nn.MSELoss()
-    model = drawnet
-    for t in range(startepochs):
-        print('epoch ', t + 1, ' out of ', startepochs, ' Drawnet')
+    drawloss_fn = torch.nn.MSELoss()
+    drawmodel = drawnet
+    for t in range(drawepochs):
+        print('epoch ', t + 1, ' out of ', drawepochs, ' Drawnet')
 
-        train(draw_data, model, loss_fn, optimizer)
+        train(draw_data, drawmodel, drawloss_fn, drawoptimizer)
         # (acc, loss) = test(test_dataloader, model, loss_fn)
 
 #################################################################################################################
 
-    startepochs = 10
-    optimizer = torch.optim.Adam(startnet.parameters(), lr=0.01)
+    discepochs = 10
+    discoptimizer = torch.optim.Adam(discnet.parameters(), lr=0.01)
     #loss_fn = torch.nn.BCELoss()
-    loss_fn = torch.nn.MSELoss()
-    model = discnet
-    for t in range(startepochs):
-        print('epoch ', t + 1, ' out of ', startepochs, ' Discardnet')
+    discloss_fn = torch.nn.MSELoss()
+    discmodel = discnet
+    for t in range(discepochs):
+        print('epoch ', t + 1, ' out of ', discepochs, ' Discardnet')
 
-        train(discard_data, model, loss_fn, optimizer)
+        train(discard_data, discmodel, discloss_fn, discoptimizer)
         # (acc, loss) = test(test_dataloader, model, loss_fn)
 
     # RETURN vals and labels, to assemble back together and train on
@@ -495,7 +495,7 @@ def n_games(games , loadfrom, saveto, player1 = a.qlearner, opponent = a.betterr
 
 
 
-
+     
 if (__name__ == "__main__"):
     '''p1 = a.qlearner(["models/trainingmodels/start_init.pth","models/trainingmodels/draw_init.pth","models/trainingmodels/discard_init.pth"]  )
     p2 = a.betterrandom('Bobby')
@@ -509,5 +509,5 @@ if (__name__ == "__main__"):
     #loadfrom = ["models/trainingmodels/start_1.pth","models/trainingmodels/draw_1.pth","models/trainingmodels/discard_1.pth"]
     # saveto2 = ["models/trainingmodels/start_2.pth","models/trainingmodels/draw_2.pth","models/trainingmodels/discard_2.pth"]
     saveto = ["models/trainingmodels/start_0.pth", "models/trainingmodels/draw_0.pth", "models/trainingmodels/discard_0.pth"]
-    n_games(30,saveto, saveto, player1 = a.forcetrainer, opponent=a.randombot(),addtopoints= False)# fromsave= True)
+    n_games(30,loadfrom, saveto, player1 = a.forcetrainer, opponent=a.randombot(),addtopoints= False)# fromsave= True)
 
