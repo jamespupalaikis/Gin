@@ -5,6 +5,7 @@ import BuildModel as mod
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
+import numpy.random as rand
 
 #import torchsummary
 
@@ -49,10 +50,16 @@ for i in vals[2][4]:
 
 
 
-
-dn = mod.DiscardNet()
+load = "models/trainingmodels/draw_0.pth"
+dn = mod.DrawNet()
+dn.load_state_dict(torch.load(load))
 #print(get_output_shape(dn, (2,4,13)))
-brd = np.zeros((2,4,13))
-input = torch.tensor(brd).float().unsqueeze(0)
+brd = np.zeros((3,4,13))
+brd2 = brd
+for i in range(rand.randint(0,22)):
+    brd2[rand.randint(0,2)][rand.randint(0,3)][rand.randint(0,12)] = 1
+
+input = torch.tensor(brd2).float().unsqueeze(0)
+print(input)
 print(dn(input))
 #print(a)

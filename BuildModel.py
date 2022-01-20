@@ -80,6 +80,7 @@ class DrawNet(nn.Module):
 
             nn.Conv2d(3, 32, kernel_size=3, padding='same'),
             nn.ReLU(),
+            torch.nn.Dropout(p=0.5, inplace=False),
             nn.Conv2d(32, 64, kernel_size=3, stride=1, padding='same'),
             nn.ReLU()
             #nn.Linear(52+52 + 52, 128),
@@ -89,9 +90,15 @@ class DrawNet(nn.Module):
             #nn.Linear(128,1)
         )
         self.linear = nn.Sequential(
-            nn.Linear(3328,64),
+            nn.Linear(3328,128),
+            
             nn.ReLU(),
-            nn.Linear(64,1)
+            torch.nn.Dropout(p=0.5, inplace=False),
+            nn.Linear(128,128),
+            
+            nn.ReLU(),
+            torch.nn.Dropout(p=0.5, inplace=False),
+            nn.Linear(128,1)
 
         )
 

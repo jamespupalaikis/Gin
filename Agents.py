@@ -30,7 +30,9 @@ class agent:
         self.deadwood = (deadval, dead)
         self.melds = melds
 
-
+    def meldslist(self):
+        flatlist=[element for sublist in self.melds for element in sublist]
+        return flatlist
 
     def printhand(self):
         print(self.hand)
@@ -234,6 +236,8 @@ class qlearner(agent):
         #brdstate2 = np.append(brdstate, toparr, 0)#boardstate to add to log
         input = torch.tensor(brd).float().unsqueeze(0)
         move = self.drawnet(input)[0].item()
+        print( self.drawnet(input))
+        print(f'learned draw move: {move}')
         self.turns[0].append(brd)
         if (move < 0):#draw from discard pile
             # ADD TO LOG
@@ -297,7 +301,7 @@ class forcetrainer(agent):#takes on decision tree based behaviour, logs moves, a
         self.first = [False, np.zeros((104)), -1]#bool for if first move was made, 52 len array for hand, and sparse 52 array for the faceup card(all zeros except 1)
         self.turns = ([],[],[],[],[]) #turns will store a drawboardstate, a draw move (-1 or 1),, a discard boardstate, a set of discard weights, a
         # nd a discard move for a given turn
-
+    
     def getmodels(self):
         return self.startnet, self.drawnet, self.discardnet
 
@@ -371,7 +375,11 @@ class forcetrainer(agent):#takes on decision tree based behaviour, logs moves, a
     ################TODO: make this more sophisticated
         card = rand.choice(self.deadwood[1])
         # move =  str(self.hand.findcard(card))
-        probs = self.singlearray(card).flatten()
+        #probs = self.singlearray(card).flatten()
+        probs = np.ones((4,13))
+        for car in self.meldslist():
+            probs[car[0] - 1][car[1]-1] = 0
+        probs = probs.flatten()
     ###########################
         #build input:
         brd = np.zeros((2, 4, 13))

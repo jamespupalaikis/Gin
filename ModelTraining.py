@@ -107,11 +107,14 @@ class TrainGame: #this will run a single game, return a result (reward/score), a
                     points -= 25
 
         else:  # A push
-            print(f'An undercut by {self.knocker[1].name}')
-            if(self.knocker[1] == self.learner):
-                points = 25
+            if((self.knocker[1] is None) == False):
+                print(f'An undercut by {self.knocker[1].name}')
+                if(self.knocker[1] == self.learner):
+                    points = 25
+                else:
+                    points = -25
             else:
-                points = -25
+                return 0
 
         return points
 
@@ -304,7 +307,7 @@ def manipdraw(obj, points, turnpenalty = 0.95): #takes the first 2 elements of t
     for i in range(len(move)):
         move[i] *= points * mult/129
         mult *= turnpenalty
-
+    print('ass', move)
     return state, move
 
 
@@ -347,7 +350,7 @@ class customData(Dataset):
         ydat = self.y[index]
         return (xdat, ydat)
 
-def train(dataloader, model, loss_fn, optimizer):
+def trainmodel(dataloader, model, loss_fn, optimizer):
     size = len(dataloader.dataset)
     model.train()
     for batch, (x,y) in enumerate(dataloader):
@@ -362,7 +365,7 @@ def train(dataloader, model, loss_fn, optimizer):
         if((pred.size() != y.size())):
             y = y.reshape(tuple(pred.size()))
         loss = loss_fn(pred, y)
-        print('loss: ', loss)
+        #print('loss: ', loss)
         #backpropogate
         optimizer.zero_grad()
         loss.backward()
@@ -388,7 +391,7 @@ def savemodels(models, saveto):
     print('All Models Saved')
 
 
-def TrainCycle(p1,p2 ):
+def TrainCycle(p1,p2, train = (True, True, True) ):
 
     game = TrainGame(p1, p2)
     points, firstvals, turnvals = game.playgame()
@@ -417,45 +420,48 @@ def TrainCycle(p1,p2 ):
     drawnet = drawnet.to(device)
     discnet = discnet.to(device)
     ###################################################
-    if(runfirst == True):
-        startepochs = 1
-        startoptimizer = torch.optim.Adam(startnet.parameters(), lr=0.005)
-        # loss_fn = torch.nn.CrossEntropyLoss()
-        startloss_fn = torch.nn.MSELoss()
-        startmodel = startnet
-        for t in range(startepochs):
-            print('epoch ', t + 1, ' out of ', startepochs, ' Startnet')
-
-            train(first_data, startmodel, startloss_fn, startoptimizer)
-
-            #(acc, loss) = test(test_dataloader, model, loss_fn)
-
+    if(train[0] == True):
+        if(runfirst == True):
+            startepochs = 1
+            startoptimizer = torch.optim.Adam(startnet.parameters(), lr=0.001)
+            # loss_fn = torch.nn.CrossEntropyLoss()
+            startloss_fn = torch.nn.MSELoss()
+            startmodel = startnet
+            for t in range(startepochs):
+                print('epoch ', t + 1, ' out of ', startepochs, ' Startnet')
+    
+                trainmodel(first_data, startmodel, startloss_fn, startoptimizer)
+    
+                #(acc, loss) = test(test_dataloader, model, loss_fn)
+    print('#' * 25)
     #######################################################
-    drawepochs = 10
-    drawoptimizer =  torch.optim.Adam(drawnet.parameters(), lr=0.01)
-    #loss_fn = torch.nn.CrossEntropyLoss()
-    drawloss_fn = torch.nn.MSELoss()
-    drawmodel = drawnet
-    for t in range(drawepochs):
-        print('epoch ', t + 1, ' out of ', drawepochs, ' Drawnet')
-
-        train(draw_data, drawmodel, drawloss_fn, drawoptimizer)
-        # (acc, loss) = test(test_dataloader, model, loss_fn)
-
+    if(train[1] == True):
+        drawepochs = 10
+        drawoptimizer =  torch.optim.Adam(drawnet.parameters(), lr=0.001)
+        #loss_fn = torch.nn.CrossEntropyLoss()
+        drawloss_fn = torch.nn.MSELoss()
+        drawmodel = drawnet
+        for t in range(drawepochs):
+            print('epoch ', t + 1, ' out of ', drawepochs, ' Drawnet')
+    
+            trainmodel(draw_data, drawmodel, drawloss_fn, drawoptimizer)
+            # (acc, loss) = test(test_dataloader, model, loss_fn)
+        
+    print('#' * 25)
 #################################################################################################################
-
-    discepochs = 10
-    discoptimizer = torch.optim.Adam(discnet.parameters(), lr=0.01)
-    #loss_fn = torch.nn.BCELoss()
-    discloss_fn = torch.nn.MSELoss()
-    discmodel = discnet
-    for t in range(discepochs):
-        print('epoch ', t + 1, ' out of ', discepochs, ' Discardnet')
-
-        train(discard_data, discmodel, discloss_fn, discoptimizer)
-        # (acc, loss) = test(test_dataloader, model, loss_fn)
-
-    # RETURN vals and labels, to assemble back together and train on
+    if(train[2] == True):
+        discepochs = 10
+        discoptimizer = torch.optim.Adam(discnet.parameters(), lr=0.001)
+        #loss_fn = torch.nn.BCELoss()
+        discloss_fn = torch.nn.MSELoss()
+        discmodel = discnet
+        for t in range(discepochs):
+            print('epoch ', t + 1, ' out of ', discepochs, ' Discardnet')
+    
+            trainmodel(discard_data, discmodel, discloss_fn, discoptimizer)
+            # (acc, loss) = test(test_dataloader, model, loss_fn)
+    
+        # RETURN vals and labels, to assemble back together and train on
     return points
 
 def n_games(games , loadfrom, saveto, player1 = a.qlearner, opponent = a.betterrandom(),  interval = 10, fromsave= False, addtopoints = True ):
@@ -504,10 +510,10 @@ if (__name__ == "__main__"):
     print(vals[0])
     print(vals[1])'''
 
-    loadfrom = ["models/trainingmodels/start_init.pth","models/trainingmodels/draw_init.pth","models/trainingmodels/discard_init.pth"]
-    #saveto = ["models/trainingmodels/start_1.pth","models/trainingmodels/draw_1.pth","models/trainingmodels/discard_1.pth"]
-    #loadfrom = ["models/trainingmodels/start_1.pth","models/trainingmodels/draw_1.pth","models/trainingmodels/discard_1.pth"]
-    # saveto2 = ["models/trainingmodels/start_2.pth","models/trainingmodels/draw_2.pth","models/trainingmodels/discard_2.pth"]
-    saveto = ["models/trainingmodels/start_0.pth", "models/trainingmodels/draw_0.pth", "models/trainingmodels/discard_0.pth"]
-    n_games(30,loadfrom, saveto, player1 = a.forcetrainer, opponent=a.randombot(),addtopoints= False)# fromsave= True)
-
+    bench1 = ["models/trainingmodels/start_b1.pth","models/trainingmodels/draw_b1.pth","models/trainingmodels/discard_b1.pth"]#draw network slightly stabilized
+    aa = ["models/trainingmodels/start_init.pth","models/trainingmodels/draw_init.pth","models/trainingmodels/discard_init.pth"]
+    bb = ["models/trainingmodels/start_0.pth", "models/trainingmodels/draw_0.pth", "models/trainingmodels/discard_0.pth"]
+    cc = ["models/trainingmodels/start_1.pth","models/trainingmodels/draw_1.pth","models/trainingmodels/discard_1.pth"]
+    dd = ["models/trainingmodels/start_2.pth","models/trainingmodels/draw_2.pth","models/trainingmodels/discard_2.pth"] 
+    #n_games(30,loadfrom, saveto, player1 = a.forcetrainer, opponent=a.randombot(),addtopoints= False)#, fromsave= True)
+    n_games(1,bb, cc, player1 = a.qlearner, opponent=a.randombot(),addtopoints= False)#, fromsave= True)
