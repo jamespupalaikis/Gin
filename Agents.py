@@ -9,7 +9,7 @@ import numpy as np
 #here we will create "agents" that will interface with the game class.
 #TODO: edit PlayGamre file so that instead of "player" attributes being just hand objects, they are "agents"
 # each "input" call will instead call a function of the agent object whose turn it is, which will then return a move
-
+import copy
 
 class agent:
     def __init__(self, name = 'none'):
@@ -94,6 +94,10 @@ class textplayer(agent):
         move = input('Enter "1" to draw from face down deck, or "2" to draw from the discard deck')
         return move
 
+
+########################################################################3
+
+
 class randombot(agent):
     def __init__(self, name = "Randy Bot"):
         agent.__init__(self, name)
@@ -111,6 +115,10 @@ class randombot(agent):
         moves = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'k']
         r = rand.randint(0,11)
         return moves[r]
+
+
+
+#########################################################################
 
 
 
@@ -145,7 +153,7 @@ class betterrandom(agent):
                 return '2'
         return '1'
 
-
+##########################################################################
 
 class simpletree(agent):
     def __init__(self, name = "Sammy Bot"):
@@ -292,7 +300,7 @@ class qlearner(agent):
 #################################################################################################################3
 
 class forcetrainer(agent):#takes on decision tree based behaviour, logs moves, and aggressively trains decisions nns with it
-    def __init__(self, models, name='Puppet'):
+    def __init__(self, models, name='Puppet', behavior = betterrandom):
         agent.__init__(self, name)
 
 
@@ -305,10 +313,33 @@ class forcetrainer(agent):#takes on decision tree based behaviour, logs moves, a
     def getmodels(self):
         return self.startnet, self.drawnet, self.discardnet
 
+
     def dealhand(self, deck):  # fills your hand from deck and updates the gamestate
         self.hand.starthand(deck)
         for drawn in self.hand.gethand():
             self.state[0][drawn[0] - 1][drawn[1] - 1] = 1#update hand state
+
+    def analyzehand(self):
+        hand = self.hand.gethand()
+        pairs = [0]*13
+        protected = []
+        for card in hand:
+            if(pairs[card[1] - 1] == 0):
+                pairs[card[1] - 1] = -1
+            elif(pairs[card[1] - 1] == -1):
+                pairs[card[1] - 1] =1
+            
+            if(((card[0], card[1] - 1) in hand) or ((card[0], card[1] + 1) in hand)  ):
+                protected.append(card)
+        
+        for i in range(len(pairs)):
+            if(pairs[i] == -1):
+                pairs[i] = 0
+        
+        return pairs, protected
+        
+        
+                
 
     def initialmove(self, discarddeck):#check whether the card creates any runs, or matches the value of any held cards
         top = discarddeck.peek()
@@ -348,6 +379,8 @@ class forcetrainer(agent):#takes on decision tree based behaviour, logs moves, a
         for card in self.hand.gethand():
             if(card[1] == discarddeck.peek()[1]):#check for same face value
                 move =  '2'
+            
+        
 
         #move = self.drawnet(input)[0].item()
         self.turns[0].append(brd)
@@ -373,12 +406,46 @@ class forcetrainer(agent):#takes on decision tree based behaviour, logs moves, a
         if (dead <= 10):
             return 'k'
     ################TODO: make this more sophisticated
-        card = rand.choice(self.deadwood[1])
+    
+    
+    
+        
+        viables = copy.copy(self.deadwood[1])
+        secondary = []
         # move =  str(self.hand.findcard(card))
         #probs = self.singlearray(card).flatten()
+        pairs, protected = self.analyzehand()
+        
+        for car in viables:
+            if(pairs[car[0] - 1] == 1):
+                viables.remove(car)
+                if(car not in protected):
+                    secondary.append(car)
+            elif(car in protected):
+                viables.remove(car)
+                secondary.append(car)
+        
+        if(viables != []):
+            card = rand.choice(viables)
+        
+        elif(secondary != []):
+            card = rand.choice(secondary)
+        
+        else: 
+            card = rand.choice(self.deadwood[1])
+        
         probs = np.ones((4,13))
+        for i in range(len(pairs)):
+            if(pairs[i] == 1):
+                for j in range(4):
+                    probs[j][i] -= 0.25
+        for car in protected:
+            probs[car[0] - 1][car[1]-1] -= 0.25
+            
+        
         for car in self.meldslist():
             probs[car[0] - 1][car[1]-1] = 0
+        
         probs = probs.flatten()
     ###########################
         #build input:

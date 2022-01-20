@@ -516,4 +516,4 @@ if (__name__ == "__main__"):
     cc = ["models/trainingmodels/start_1.pth","models/trainingmodels/draw_1.pth","models/trainingmodels/discard_1.pth"]
     dd = ["models/trainingmodels/start_2.pth","models/trainingmodels/draw_2.pth","models/trainingmodels/discard_2.pth"] 
     #n_games(30,loadfrom, saveto, player1 = a.forcetrainer, opponent=a.randombot(),addtopoints= False)#, fromsave= True)
-    n_games(1,bb, cc, player1 = a.qlearner, opponent=a.randombot(),addtopoints= False)#, fromsave= True)
+    n_games(1,bb, cc, player1 = a.forcetrainer, opponent=a.randombot(),addtopoints= False)#, fromsave= True)
