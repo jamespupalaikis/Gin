@@ -6,7 +6,7 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 import numpy.random as rand
-
+from scipy.special import softmax
 #import torchsummary
 
 mydick = c.deck(empty = True)
@@ -58,8 +58,13 @@ brd = np.zeros((3,4,13))
 brd2 = brd
 for i in range(rand.randint(0,22)):
     brd2[rand.randint(0,2)][rand.randint(0,3)][rand.randint(0,12)] = 1
+    
+    
+
 
 input = torch.tensor(brd2).float().unsqueeze(0)
 print(input)
-print(dn(input))
+print(dn(input)[0].item())
 #print(a)
+
+#print(softmax(brd2.flatten()))

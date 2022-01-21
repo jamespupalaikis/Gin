@@ -374,7 +374,7 @@ def trainmodel(dataloader, model, loss_fn, optimizer):
         if (batch % 1 == 0):
             loss, current = loss.item(), batch * len(x)
             print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
-    except:
+    except:#CHECK WHY THIS HAPPENS
         print('a')
         print(' ')
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -422,7 +422,7 @@ def TrainCycle(p1,p2, train = (True, True, True) ):
     ###################################################
     if(train[0] == True):
         if(runfirst == True):
-            startepochs = 1
+            startepochs = 10
             startoptimizer = torch.optim.Adam(startnet.parameters(), lr=0.001)
             # loss_fn = torch.nn.CrossEntropyLoss()
             startloss_fn = torch.nn.MSELoss()
@@ -436,7 +436,7 @@ def TrainCycle(p1,p2, train = (True, True, True) ):
     print('#' * 25)
     #######################################################
     if(train[1] == True):
-        drawepochs = 10
+        drawepochs = 5
         drawoptimizer =  torch.optim.Adam(drawnet.parameters(), lr=0.001)
         #loss_fn = torch.nn.CrossEntropyLoss()
         drawloss_fn = torch.nn.MSELoss()
@@ -450,7 +450,7 @@ def TrainCycle(p1,p2, train = (True, True, True) ):
     print('#' * 25)
 #################################################################################################################
     if(train[2] == True):
-        discepochs = 10
+        discepochs = 5
         discoptimizer = torch.optim.Adam(discnet.parameters(), lr=0.001)
         #loss_fn = torch.nn.BCELoss()
         discloss_fn = torch.nn.MSELoss()
@@ -515,5 +515,7 @@ if (__name__ == "__main__"):
     bb = ["models/trainingmodels/start_0.pth", "models/trainingmodels/draw_0.pth", "models/trainingmodels/discard_0.pth"]
     cc = ["models/trainingmodels/start_1.pth","models/trainingmodels/draw_1.pth","models/trainingmodels/discard_1.pth"]
     dd = ["models/trainingmodels/start_2.pth","models/trainingmodels/draw_2.pth","models/trainingmodels/discard_2.pth"] 
-    #n_games(30,loadfrom, saveto, player1 = a.forcetrainer, opponent=a.randombot(),addtopoints= False)#, fromsave= True)
-    n_games(1,bb, cc, player1 = a.forcetrainer, opponent=a.randombot(),addtopoints= False)#, fromsave= True)
+    #n_games(30 ,aa , bb, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
+    n_games(1,bb, dd, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
+
+#TODO: Find what causes loss calc to fail, and choices list to be empty

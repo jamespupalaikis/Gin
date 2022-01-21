@@ -4,6 +4,9 @@ import random as rand
 from Cards import recurse
 import BuildModel as mod
 
+from scipy.special import softmax
+
+
 import torch
 import numpy as np
 #here we will create "agents" that will interface with the game class.
@@ -71,6 +74,25 @@ class agent:
         return highest[1]
                 
             
+    def readarray(self, array, val = 1):
+        assert(len(array) == 4)
+        assert(len(array[0] == 13))
+        
+        cards = []
+        for i in range(4):
+            for j in range(13):
+                if(array[i][j] == val):
+                    cards.append((i+1, j+1))
+        
+        return cards
+        
+    def getarraymaxes(self, array):
+        assert(len(array) == 4)
+        assert(len(array[0] == 13))
+        
+        max = 0.0
+        cards = []
+        
 
 
 
@@ -148,8 +170,14 @@ class betterrandom(agent):
 
         return
     def drawmove(self, discarddeck):#similar to initialmove, check if faceup card matches held values
+        top = discarddeck.peek()
         for card in self.hand.gethand():
-            if(card[1] == discarddeck.peek()[1]):#check for same face value
+            if(card[1] == top[1]):#check for same face value
+                return '2'
+            if((top[0], top[1] + 1) in self.hand.gethand()):
+                if(((top[0], top[1] + 2) in self.hand.gethand()) or ((top[0], top[1] -1) in self.hand.gethand()) ):
+                    return '2'
+            elif(((top[0], top[1] - 1) in self.hand.gethand()) and ((top[0], top[1] - 2) in self.hand.gethand()) ):
                 return '2'
         return '1'
 
@@ -245,6 +273,7 @@ class qlearner(agent):
         input = torch.tensor(brd).float().unsqueeze(0)
         move = self.drawnet(input)[0].item()
         print( self.drawnet(input))
+        print( self.drawnet(input)[0])
         print(f'learned draw move: {move}')
         self.turns[0].append(brd)
         if (move < 0):#draw from discard pile
@@ -280,7 +309,7 @@ class qlearner(agent):
         self.turns[2].append(brd)
         input = torch.tensor(brd).float().unsqueeze(0)
         probs = self.discardnet(input).tolist()[0]#add this to log
-        print('probs', probs)
+        print('probs', np.array(probs).reshape(4,13))
         self.turns[3].append(probs)
         enum = list(enumerate(probs))
         enum.sort(key = lambda x: x[1], reverse=True)
@@ -376,9 +405,18 @@ class forcetrainer(agent):#takes on decision tree based behaviour, logs moves, a
         # brdstate = np.append(self.state[0].flatten(), discarddeck.array(), 0)#boardstate minus top card
         # brdstate2 = np.append(brdstate, toparr, 0)#boardstate to add to log
         move = '1'
+    
         for card in self.hand.gethand():
-            if(card[1] == discarddeck.peek()[1]):#check for same face value
+            if(card[1] == top[1]):#check for same face value
                 move =  '2'
+        
+        if((top[0], top[1] + 1) in self.hand.gethand()):
+            if(((top[0], top[1] + 2) in self.hand.gethand()) or ((top[0], top[1] -1) in self.hand.gethand()) ):
+                print('run cond.1')
+                move = '2'
+        if(((top[0], top[1] - 1) in self.hand.gethand()) and ((top[0], top[1] - 2) in self.hand.gethand()) ):
+            print('run cond.2')
+            move = '2'
             
         
 
@@ -441,12 +479,20 @@ class forcetrainer(agent):#takes on decision tree based behaviour, logs moves, a
                     probs[j][i] -= 0.25
         for car in protected:
             probs[car[0] - 1][car[1]-1] -= 0.25
+        
+        for i in range(4):
+            for j in range(13):
+                if(j <9):
+                    probs[i][j] -= (.25/10)*(10-j + 1)
+                    
+            
             
         
         for car in self.meldslist():
             probs[car[0] - 1][car[1]-1] = 0
         
         probs = probs.flatten()
+        probs = softmax(probs)
     ###########################
         #build input:
         brd = np.zeros((2, 4, 13))
