@@ -5,7 +5,7 @@ import numpy as np
 import Cards as c
 from Cards import recurse
 import Agents as a
-import random as rand
+import numpy.random as rand
 import BuildModel as mod
 
 #######
@@ -15,8 +15,21 @@ from torch import nn
 from torch.utils.data import DataLoader, Dataset
 from torchvision import datasets
 from torchvision.transforms import ToTensor, Lambda, Compose
-
+from sklearn.utils import shuffle
 import matplotlib.pyplot as plt
+
+
+
+
+#################################
+
+def unison_shuffled_copies(a, b):
+    rng_state = rand.get_state()
+    rand.shuffle(a)
+    rand.set_state(rng_state)
+    rand.shuffle(b)
+    
+#################################
 
 class TrainGame: #this will run a single game, return a result (reward/score), and a set of moves made throughout the game
     def __init__(self, qlearner,player2 ):
@@ -164,6 +177,7 @@ class TrainGame: #this will run a single game, return a result (reward/score), a
                     print('Enter a number! (or k)')
 
             if (isinstance(discardindex, str)):
+                
                 tryknock = self.knock(player)
                 if (tryknock == True):  # knock accepted
                     print('knock accepted')
@@ -174,7 +188,8 @@ class TrainGame: #this will run a single game, return a result (reward/score), a
                 print("You can't knock right now!!!!")
 
                 # print('ass', type(discardindex))
-            elif ((discardindex > player.cardcount()) or (discardindex < 0)):
+            
+            elif ((discardindex > (player.cardcount() - 1)) or (discardindex < 0)):
                 print('Not a valid number!')
             elif (discardindex >= 0 and (discardindex < player.cardcount())):
                 dcard = player.getcard(discardindex)
@@ -196,11 +211,9 @@ class TrainGame: #this will run a single game, return a result (reward/score), a
                   index=0):  # first will pass the hand of the player BEING DEALT TO. Index is a 0, unless the previous player has passed
         if (first == self.learner):
             other = self.player2
-            me = "Player 1"
             self.state = 'p1deal'
         else:
             other = self.learner
-            me = "Player 2"
             self.state = 'p2deal'
         # other will be the player that is not drawing
         if (index == 0):
@@ -320,7 +333,7 @@ def manipdiscard(obj, points, turnpenalty = 0.99): #takes the last 3 elements of
     mult =1.0
     for i in range(len(baseprobs)):
         probs = baseprobs[i]
-        overflow = 10 #spread from the max 129 points you want in the label adjustment
+        overflow = 70 #spread from the max 129 points you want in the label adjustment
         val = (points+129)/(258 - 2*overflow)
         val *= mult
         val = max(val, 0)
@@ -391,34 +404,67 @@ def savemodels(models, saveto):
     print('All Models Saved')
 
 
-def TrainCycle(p1,p2, train = (True, True, True) ):
-
-    game = TrainGame(p1, p2)
-    points, firstvals, turnvals = game.playgame()
-
-    print(f'GameScore: {points}')
-    startnet, drawnet, discnet = p1.getmodels()
+def TrainCycle(player1, models, opponent, train = (True, True, True), cyclelength = 1 ):
+    fulldraw_x, fulldraw_y, fulldiscard_x, fulldiscard_y, fullfirst_x, fullfirst_y = [],[],[],[],[],[]
+    fullpoints = []
     runfirst = False
-    #######################################################
-    if(firstvals[0] == True):
-        runfirst = True
-        first_x, first_y = manipfirst(firstvals, points)
-        trans_first = customData([first_x], [first_y])
-        first_data = DataLoader(trans_first, batch_size=1)
-        startnet = startnet.to(device)
+    for i in range(cyclelength):
+        print('*%*%#' * 30)
+        print(' ')
+        print(f'On Cycle {i + 1}')
+        print('')
+        p1 = player1(models)
+        p2 = opponent
+        game = TrainGame(p1, p2)
+        points, firstvals, turnvals = game.playgame()
+        
+        fullpoints.append(points)
+    
+        print(f'GameScore: {points}')
+        startnet, drawnet, discnet = p1.getmodels()
+        
+        #######################################################
+        if(firstvals[0] == True):
+            runfirst = True
+            first_x, first_y = manipfirst(firstvals, points)
+            fullfirst_x += first_x
+            fullfirst_y += first_y
+    
+        draw_x, draw_y = manipdraw(turnvals[:2], points)
+        discard_x, discard_y = manipdiscard(turnvals[2:], points)
+        fulldraw_x += draw_x
+        fulldraw_y += draw_y
+        fulldiscard_x += discard_x
+        fulldiscard_y += discard_y
+        
+    
+    unison_shuffled_copies(fulldraw_x,fulldraw_y )
+    unison_shuffled_copies(fulldiscard_x,fulldiscard_y )
+    
+    ###########################################
+    
+    
+    
+    print(fulldraw_x[0])
+    print('c c  c ')
+    print(fulldraw_y[0])
+    trans_draw = customData(fulldraw_x, fulldraw_y)
+    trans_disc = customData(fulldiscard_x, fulldiscard_y)
 
-    draw_x, draw_y = manipdraw(turnvals[:2], points)
-    discard_x, discard_y = manipdiscard(turnvals[2:], points)
-
-    trans_draw = customData(draw_x, draw_y)
-    trans_disc = customData(discard_x, discard_y)
-    ###################################################
 
     draw_data = DataLoader(trans_draw, batch_size=1)
     discard_data = DataLoader(trans_disc, batch_size=1)
-    ###################################################
+    
     drawnet = drawnet.to(device)
     discnet = discnet.to(device)
+    
+    
+    if(runfirst == True):
+        unison_shuffled_copies(fullfirst_x,fullfirst_y )
+        trans_first = customData([fullfirst_x], [fullfirst_y])
+        first_data = DataLoader(trans_first, batch_size=1)
+        startnet = startnet.to(device)
+    
     ###################################################
     if(train[0] == True):
         if(runfirst == True):
@@ -464,7 +510,7 @@ def TrainCycle(p1,p2, train = (True, True, True) ):
         # RETURN vals and labels, to assemble back together and train on
     return points
 
-def n_games(games , loadfrom, saveto, player1 = a.qlearner, opponent = a.betterrandom(),  interval = 10, fromsave= False, addtopoints = True ):
+def n_games(cycles, cyclelength , loadfrom, saveto, player1 = a.qlearner, opponent = a.betterrandom(),  interval = 10, fromsave= False, addtopoints = True ):
     backup = ["models/trainingmodels/start_backup.pth", "models/trainingmodels/draw_backup.pth",
               "models/trainingmodels/discard_backup.pth"]
     if(fromsave == True):
@@ -477,17 +523,16 @@ def n_games(games , loadfrom, saveto, player1 = a.qlearner, opponent = a.betterr
     discardnet.load_state_dict(torch.load(loadfrom[2]))
     models = [startnet, drawnet, discardnet]
     pts = []
-    for i in range(games):
+    for i in range(cycles):
         
-        p1 = player1(models)
-        p2 = opponent
-        print(f'game: {i + 1} out of {games}')
+        
+        print(f'cycle: {i + 1} out of {cycles}')
         print(' ')
         print(' ')
         print('#*'*60)
         print(' ')
         print(' ')
-        pts.append(TrainCycle(p1,p2))
+        pts.append(TrainCycle(player1, models, opponent, cyclelength=cyclelength))
         if((i+1)%interval == 0):
             savemodels(models, backup)
     savemodels(models, saveto)
@@ -509,13 +554,13 @@ if (__name__ == "__main__"):
     vals = game.playgame()
     print(vals[0])
     print(vals[1])'''
-
     bench1 = ["models/trainingmodels/start_b1.pth","models/trainingmodels/draw_b1.pth","models/trainingmodels/discard_b1.pth"]#draw network slightly stabilized
+    bench2 = ["models/trainingmodels/start_b2.pth","models/trainingmodels/draw_b2.pth","models/trainingmodels/discard_b2.pth"]
     aa = ["models/trainingmodels/start_init.pth","models/trainingmodels/draw_init.pth","models/trainingmodels/discard_init.pth"]
     bb = ["models/trainingmodels/start_0.pth", "models/trainingmodels/draw_0.pth", "models/trainingmodels/discard_0.pth"]
     cc = ["models/trainingmodels/start_1.pth","models/trainingmodels/draw_1.pth","models/trainingmodels/discard_1.pth"]
     dd = ["models/trainingmodels/start_2.pth","models/trainingmodels/draw_2.pth","models/trainingmodels/discard_2.pth"] 
-    #n_games(30 ,aa , bb, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
-    n_games(1,bb, dd, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
+    qq = ["models/trainingmodels/startq.pth","models/trainingmodels/drawq.pth","models/trainingmodels/discardq.pth"] 
+    n_games(1,1 ,dd , bench2, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= True)#, fromsave= True)
+    #n_games(20,bb, cc, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= True)#, fromsave= True)
 
-#TODO: Find what causes loss calc to fail, and choices list to be empty

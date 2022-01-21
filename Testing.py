@@ -48,7 +48,7 @@ for i in vals[2][4]:
     print(x)
     print(i)'''
 
-
+from sklearn.utils import shuffle
 
 load = "models/trainingmodels/draw_0.pth"
 dn = mod.DrawNet()
@@ -60,11 +60,21 @@ for i in range(rand.randint(0,22)):
     brd2[rand.randint(0,2)][rand.randint(0,3)][rand.randint(0,12)] = 1
     
     
+def unison_shuffled_copies(a, b):
+    rng_state = rand.get_state()
+    rand.shuffle(a)
+    rand.set_state(rng_state)
+    rand.shuffle(b)
+    
 
 
 input = torch.tensor(brd2).float().unsqueeze(0)
 print(input)
 print(dn(input)[0].item())
 #print(a)
+f = [[1,2],[2,3],[3,4]]
+g = [['a','b'],['b','c'],['c','d']]
+unison_shuffled_copies(f, g)
+print(f, g)
 
 #print(softmax(brd2.flatten()))

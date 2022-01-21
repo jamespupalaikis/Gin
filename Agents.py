@@ -134,7 +134,7 @@ class randombot(agent):
     def drawmove(self, discarddeck):
         return str(rand.randint(1,2))
     def discardmove(self,discarddeck):
-        moves = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'k']
+        moves = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'k']
         r = rand.randint(0,11)
         return moves[r]
 
@@ -165,7 +165,12 @@ class betterrandom(agent):
         dead = sum(deadv[:-1])
         if(dead <= 10 ):
             return 'k'
-        card = rand.choice(self.deadwood[1])
+        new = copy.deepcopy( self.deadwood[1])
+        try:
+            new.remove(self.hand.gethand()[-1])
+        except:
+            print('')
+        card = rand.choice(new)
         return str(self.hand.findcard(card))
 
         return
@@ -217,25 +222,7 @@ class qlearner(agent):
         for drawn in self.hand.gethand():
             self.state[0][drawn[0] - 1][drawn[1] - 1] = 1#update hand state
 
-    def savestate_afterdraw(self, drawn, drawdeck = -1):#updates self.state after a draw ( remove from discard if thats where it was drawn from
-        assert(self.state[0][drawn[0] - 1][drawn[1] - 1] == 0) #shouldnt be in hand before
-        self.state[0][drawn[0] - 1][drawn[1] - 1] = 1 #set hand value to 1
-        '''if(discard == -1):#drawn from discardpile
-            assert(self.state[1][drawn[0] - 1][drawn[1] - 1] == 1)
-            self.state[1][drawn[0] - 1][drawn[1] - 1] = 0#set discarddeck value to 0'''
-            #OBSOLETE
-
-
-    def savestate_discard(self, discarded, probs):#updates self.state after a discard (update hand, add to discard)
-        assert(self.state[0][discarded[0] - 1][discarded[1] - 1] == 1)#should be in hand before
-        self.state[0][discarded[0] - 1][discarded[1] - 1] = 0 #remove from hand state
-        '''assert (self.state[1][discarded[1] - 1][discarded[1] - 1] == 0)#shouldnt be in discard before
-        self.state[1][discarded[0] - 1][discarded[1] - 1] = 1  # add to discard state'''
-
-
-
-    #ADD TO TURN LOG
-
+  
 
 
 
@@ -315,12 +302,13 @@ class qlearner(agent):
         enum.sort(key = lambda x: x[1], reverse=True)
         for ind, cardoption in enum:
             translatedcard = self.hand.translatearray(ind)
-            if(self.hand.isinhand(translatedcard)):
-                cardindex = ind #store this in log
-                self.turns[4].append(ind)
-
-                self.state[0][translatedcard[0] - 1][translatedcard[1] - 1] = 0  #remove the card from hand
-                return self.hand.findcard(translatedcard)
+            if(translatedcard != last):
+                if(self.hand.isinhand(translatedcard)):
+                    cardindex = ind #store this in log
+                    self.turns[4].append(ind)
+    
+                    self.state[0][translatedcard[0] - 1][translatedcard[1] - 1] = 0  #remove the card from hand
+                    return self.hand.findcard(translatedcard)
 
 
         return
@@ -449,6 +437,10 @@ class forcetrainer(agent):#takes on decision tree based behaviour, logs moves, a
     
         
         viables = copy.copy(self.deadwood[1])
+        try:
+            viables.remove(last)
+        except:
+            print(' ')
         secondary = []
         # move =  str(self.hand.findcard(card))
         #probs = self.singlearray(card).flatten()
@@ -476,14 +468,14 @@ class forcetrainer(agent):#takes on decision tree based behaviour, logs moves, a
         for i in range(len(pairs)):
             if(pairs[i] == 1):
                 for j in range(4):
-                    probs[j][i] -= 0.25
+                    probs[j][i] -= 0.22
         for car in protected:
-            probs[car[0] - 1][car[1]-1] -= 0.25
+            probs[car[0] - 1][car[1]-1] -= 0.22
         
         for i in range(4):
             for j in range(13):
                 if(j <9):
-                    probs[i][j] -= (.25/10)*(10-j + 1)
+                    probs[i][j] -= (.13/10)*(10-j + 1)
                     
             
             
