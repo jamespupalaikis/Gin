@@ -404,8 +404,10 @@ def savemodels(models, saveto):
     print('All Models Saved')
 
 
-def TrainCycle(player1, models, opponent, train = (True, True, True), cyclelength = 1 ):
+def TrainCycle(player1, models, opponent, train = (True, True, True), batches = (1,1,1), learning = (0.001, 0.0001, 0.0001), cyclelength = 1 ):
     fulldraw_x, fulldraw_y, fulldiscard_x, fulldiscard_y, fullfirst_x, fullfirst_y = [],[],[],[],[],[]
+    batchstart, batchdraw, batchdisc = batches
+    learnstart, learndraw, learndisc = learning
     fullpoints = []
     runfirst = False
     for i in range(cyclelength):
@@ -427,9 +429,14 @@ def TrainCycle(player1, models, opponent, train = (True, True, True), cyclelengt
         if(firstvals[0] == True):
             runfirst = True
             first_x, first_y = manipfirst(firstvals, points)
-            fullfirst_x += first_x
-            fullfirst_y += first_y
-    
+            print(first_x)
+            print(' ')
+            print(first_x[0])
+            print(type(first_x), type(first_x[0]))
+            #fullfirst_x += first_x.tolist()
+            fullfirst_x += [first_x]
+            fullfirst_y.append( first_y)
+     
         draw_x, draw_y = manipdraw(turnvals[:2], points)
         discard_x, discard_y = manipdiscard(turnvals[2:], points)
         fulldraw_x += draw_x
@@ -444,16 +451,15 @@ def TrainCycle(player1, models, opponent, train = (True, True, True), cyclelengt
     ###########################################
     
     
-    
-    print(fulldraw_x[0])
-    print('c c  c ')
-    print(fulldraw_y[0])
+    print('aaaa')
+    print(fullfirst_x)
+
     trans_draw = customData(fulldraw_x, fulldraw_y)
     trans_disc = customData(fulldiscard_x, fulldiscard_y)
 
 
-    draw_data = DataLoader(trans_draw, batch_size=1)
-    discard_data = DataLoader(trans_disc, batch_size=1)
+    draw_data = DataLoader(trans_draw, batch_size=batchdraw)
+    discard_data = DataLoader(trans_disc, batch_size=batchdisc)
     
     drawnet = drawnet.to(device)
     discnet = discnet.to(device)
@@ -461,15 +467,15 @@ def TrainCycle(player1, models, opponent, train = (True, True, True), cyclelengt
     
     if(runfirst == True):
         unison_shuffled_copies(fullfirst_x,fullfirst_y )
-        trans_first = customData([fullfirst_x], [fullfirst_y])
-        first_data = DataLoader(trans_first, batch_size=1)
+        trans_first = customData(fullfirst_x, fullfirst_y)
+        first_data = DataLoader(trans_first, batch_size=batchstart)
         startnet = startnet.to(device)
     
     ###################################################
     if(train[0] == True):
         if(runfirst == True):
             startepochs = 10
-            startoptimizer = torch.optim.Adam(startnet.parameters(), lr=0.001)
+            startoptimizer = torch.optim.Adam(startnet.parameters(), lr=learnstart)
             # loss_fn = torch.nn.CrossEntropyLoss()
             startloss_fn = torch.nn.MSELoss()
             startmodel = startnet
@@ -483,7 +489,7 @@ def TrainCycle(player1, models, opponent, train = (True, True, True), cyclelengt
     #######################################################
     if(train[1] == True):
         drawepochs = 5
-        drawoptimizer =  torch.optim.Adam(drawnet.parameters(), lr=0.001)
+        drawoptimizer =  torch.optim.Adam(drawnet.parameters(), lr=learndraw)
         #loss_fn = torch.nn.CrossEntropyLoss()
         drawloss_fn = torch.nn.MSELoss()
         drawmodel = drawnet
@@ -497,7 +503,7 @@ def TrainCycle(player1, models, opponent, train = (True, True, True), cyclelengt
 #################################################################################################################
     if(train[2] == True):
         discepochs = 5
-        discoptimizer = torch.optim.Adam(discnet.parameters(), lr=0.001)
+        discoptimizer = torch.optim.Adam(discnet.parameters(), lr=learndisc)
         #loss_fn = torch.nn.BCELoss()
         discloss_fn = torch.nn.MSELoss()
         discmodel = discnet
@@ -510,7 +516,7 @@ def TrainCycle(player1, models, opponent, train = (True, True, True), cyclelengt
         # RETURN vals and labels, to assemble back together and train on
     return points
 
-def n_games(cycles, cyclelength , loadfrom, saveto, player1 = a.qlearner, opponent = a.betterrandom(),  interval = 10, fromsave= False, addtopoints = True ):
+def n_cycles(cycles, cyclelength , loadfrom, saveto, player1 = a.qlearner, opponent = a.betterrandom(),  interval = 10, fromsave= False, addtopoints = True ):
     backup = ["models/trainingmodels/start_backup.pth", "models/trainingmodels/draw_backup.pth",
               "models/trainingmodels/discard_backup.pth"]
     if(fromsave == True):
@@ -532,7 +538,7 @@ def n_games(cycles, cyclelength , loadfrom, saveto, player1 = a.qlearner, oppone
         print('#*'*60)
         print(' ')
         print(' ')
-        pts.append(TrainCycle(player1, models, opponent, cyclelength=cyclelength))
+        pts.append(TrainCycle(player1, models, opponent, cyclelength=cyclelength, batches = (1,10,10)))
         if((i+1)%interval == 0):
             savemodels(models, backup)
     savemodels(models, saveto)
@@ -555,12 +561,12 @@ if (__name__ == "__main__"):
     print(vals[0])
     print(vals[1])'''
     bench1 = ["models/trainingmodels/start_b1.pth","models/trainingmodels/draw_b1.pth","models/trainingmodels/discard_b1.pth"]#draw network slightly stabilized
-    bench2 = ["models/trainingmodels/start_b2.pth","models/trainingmodels/draw_b2.pth","models/trainingmodels/discard_b2.pth"]
+    bench2 = ["models/trainingmodels/start_b2.pth","models/trainingmodels/draw_b2.pth","models/trainingmodels/discard_b2.pth"]#defunct
     aa = ["models/trainingmodels/start_init.pth","models/trainingmodels/draw_init.pth","models/trainingmodels/discard_init.pth"]
     bb = ["models/trainingmodels/start_0.pth", "models/trainingmodels/draw_0.pth", "models/trainingmodels/discard_0.pth"]
     cc = ["models/trainingmodels/start_1.pth","models/trainingmodels/draw_1.pth","models/trainingmodels/discard_1.pth"]
     dd = ["models/trainingmodels/start_2.pth","models/trainingmodels/draw_2.pth","models/trainingmodels/discard_2.pth"] 
     qq = ["models/trainingmodels/startq.pth","models/trainingmodels/drawq.pth","models/trainingmodels/discardq.pth"] 
-    n_games(1,1 ,dd , bench2, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= True)#, fromsave= True)
-    #n_games(20,bb, cc, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= True)#, fromsave= True)
+    n_cycles(2,10  ,bench1 , aa, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
+    #n_cycles(20,bb, cc, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= True)#, fromsave= True)
 
