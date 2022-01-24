@@ -176,15 +176,19 @@ class betterrandom(agent):
         return
     def drawmove(self, discarddeck):#similar to initialmove, check if faceup card matches held values
         top = discarddeck.peek()
+        move = '1'
         for card in self.hand.gethand():
             if(card[1] == top[1]):#check for same face value
-                return '2'
+                move =  '2'
             if((top[0], top[1] + 1) in self.hand.gethand()):
                 if(((top[0], top[1] + 2) in self.hand.gethand()) or ((top[0], top[1] -1) in self.hand.gethand()) ):
-                    return '2'
+                    move =  '2'
             elif(((top[0], top[1] - 1) in self.hand.gethand()) and ((top[0], top[1] - 2) in self.hand.gethand()) ):
-                return '2'
-        return '1'
+                move =  '2'
+        roll = rand.randint(0,10)
+        if(roll == 5):
+            move = '1'
+        return move
 
 ##########################################################################
 
@@ -317,7 +321,7 @@ class qlearner(agent):
 #################################################################################################################3
 
 class forcetrainer(agent):#takes on decision tree based behaviour, logs moves, and aggressively trains decisions nns with it
-    def __init__(self, models, name='Puppet', behavior = betterrandom):
+    def __init__(self, models, name='Trainer', behavior = betterrandom):
         agent.__init__(self, name)
 
 
@@ -400,12 +404,15 @@ class forcetrainer(agent):#takes on decision tree based behaviour, logs moves, a
         
         if((top[0], top[1] + 1) in self.hand.gethand()):
             if(((top[0], top[1] + 2) in self.hand.gethand()) or ((top[0], top[1] -1) in self.hand.gethand()) ):
-                print('run cond.1')
+                
                 move = '2'
         if(((top[0], top[1] - 1) in self.hand.gethand()) and ((top[0], top[1] - 2) in self.hand.gethand()) ):
-            print('run cond.2')
+            
             move = '2'
             
+        roll = rand.randint(0,10)
+        if(roll == 5):
+            move = '1'
         
 
         #move = self.drawnet(input)[0].item()

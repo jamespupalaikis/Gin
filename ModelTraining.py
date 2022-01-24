@@ -311,20 +311,22 @@ def manipfirst(obj, points):#takes the first move training object(given its firs
     #ADD PENALTY HERE
     return state, points*move/129
 
-def manipdraw(obj, points, turnpenalty = 0.95): #takes the first 2 elements of the returned data(the draw elements) and puts it into trainable form
+def manipdraw(obj, points,manip , turnpenalty = 0.95): #takes the first 2 elements of the returned data(the draw elements) and puts it into trainable form
     state, move = obj
     assert(len(state) == len(move))
     state.reverse()
     move.reverse()
     mult = 1.0
     for i in range(len(move)):
-        move[i] *= points * mult/129
+        move[i] *=  mult/129
+        if(manip == True):
+            move[i] *= points 
         mult *= turnpenalty
     print('ass', move)
     return state, move
 
 
-def manipdiscard(obj, points, turnpenalty = 0.99): #takes the last 3 elements of the returned data(the discard elements) and puts into trainable form
+def manipdiscard(obj, points, manip, turnpenalty = 0.99): #takes the last 3 elements of the returned data(the discard elements) and puts into trainable form
     state, baseprobs, choiceindex = obj
     assert(len(baseprobs) == len(choiceindex))
     state.reverse()
@@ -338,8 +340,9 @@ def manipdiscard(obj, points, turnpenalty = 0.99): #takes the last 3 elements of
         val *= mult
         val = max(val, 0)
         val = min(val, 1)
-        probs[choiceindex[i]] = val
-        mult *= turnpenalty
+        if(manip == True):
+            probs[choiceindex[i]] = val
+        #mult *= turnpenalty
 
     return state, baseprobs
 
@@ -404,7 +407,7 @@ def savemodels(models, saveto):
     print('All Models Saved')
 
 
-def TrainCycle(player1, models, opponent, train = (True, True, True), batches = (1,1,1), learning = (0.001, 0.0001, 0.0001), cyclelength = 1 ):
+def TrainCycle(player1, models, opponent, train = (True, True, True), batches = (1,1,1), learning = (0.001, 0.0001, 0.0001), cyclelength = 1 , manip = True):
     fulldraw_x, fulldraw_y, fulldiscard_x, fulldiscard_y, fullfirst_x, fullfirst_y = [],[],[],[],[],[]
     batchstart, batchdraw, batchdisc = batches
     learnstart, learndraw, learndisc = learning
@@ -413,7 +416,7 @@ def TrainCycle(player1, models, opponent, train = (True, True, True), batches = 
     for i in range(cyclelength):
         print('*%*%#' * 30)
         print(' ')
-        print(f'On Cycle {i + 1}')
+        print(f'On Subcycle {i + 1}')
         print('')
         p1 = player1(models)
         p2 = opponent
@@ -437,8 +440,8 @@ def TrainCycle(player1, models, opponent, train = (True, True, True), batches = 
             fullfirst_x += [first_x]
             fullfirst_y.append( first_y)
      
-        draw_x, draw_y = manipdraw(turnvals[:2], points)
-        discard_x, discard_y = manipdiscard(turnvals[2:], points)
+        draw_x, draw_y = manipdraw(turnvals[:2], points, manip)
+        discard_x, discard_y = manipdiscard(turnvals[2:], points, manip)
         fulldraw_x += draw_x
         fulldraw_y += draw_y
         fulldiscard_x += discard_x
@@ -516,7 +519,7 @@ def TrainCycle(player1, models, opponent, train = (True, True, True), batches = 
         # RETURN vals and labels, to assemble back together and train on
     return points
 
-def n_cycles(cycles, cyclelength , loadfrom, saveto, player1 = a.qlearner, opponent = a.betterrandom(),  interval = 10, fromsave= False, addtopoints = True ):
+def n_cycles(cycles, cyclelength , loadfrom, saveto, player1 = a.qlearner, opponent = a.betterrandom(),  interval = 4, fromsave= False, addtopoints = True , manip = True):
     backup = ["models/trainingmodels/start_backup.pth", "models/trainingmodels/draw_backup.pth",
               "models/trainingmodels/discard_backup.pth"]
     if(fromsave == True):
@@ -538,7 +541,7 @@ def n_cycles(cycles, cyclelength , loadfrom, saveto, player1 = a.qlearner, oppon
         print('#*'*60)
         print(' ')
         print(' ')
-        pts.append(TrainCycle(player1, models, opponent, cyclelength=cyclelength, batches = (1,10,10)))
+        pts.append(TrainCycle(player1, models, opponent, cyclelength=cyclelength, batches = (1,10,10), manip = manip))
         if((i+1)%interval == 0):
             savemodels(models, backup)
     savemodels(models, saveto)
@@ -561,12 +564,12 @@ if (__name__ == "__main__"):
     print(vals[0])
     print(vals[1])'''
     bench1 = ["models/trainingmodels/start_b1.pth","models/trainingmodels/draw_b1.pth","models/trainingmodels/discard_b1.pth"]#draw network slightly stabilized
-    bench2 = ["models/trainingmodels/start_b2.pth","models/trainingmodels/draw_b2.pth","models/trainingmodels/discard_b2.pth"]#defunct
+    bench2 = ["models/trainingmodels/start_b2.pth","models/trainingmodels/draw_b2.pth","models/trainingmodels/discard_b2.pth"]#Discard function much better, draw function needs work
     aa = ["models/trainingmodels/start_init.pth","models/trainingmodels/draw_init.pth","models/trainingmodels/discard_init.pth"]
     bb = ["models/trainingmodels/start_0.pth", "models/trainingmodels/draw_0.pth", "models/trainingmodels/discard_0.pth"]
     cc = ["models/trainingmodels/start_1.pth","models/trainingmodels/draw_1.pth","models/trainingmodels/discard_1.pth"]
     dd = ["models/trainingmodels/start_2.pth","models/trainingmodels/draw_2.pth","models/trainingmodels/discard_2.pth"] 
     qq = ["models/trainingmodels/startq.pth","models/trainingmodels/drawq.pth","models/trainingmodels/discardq.pth"] 
-    n_cycles(2,10  ,bench1 , aa, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
-    #n_cycles(20,bb, cc, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= True)#, fromsave= True)
+    n_cycles(5,10  ,bench2 , aa, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= False, manip = False)#, fromsave= True)
+    #n_cycles(1,1,cc, bench2, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
 
