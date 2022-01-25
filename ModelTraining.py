@@ -311,18 +311,23 @@ def manipfirst(obj, points):#takes the first move training object(given its firs
     #ADD PENALTY HERE
     return state, points*move/129
 
-def manipdraw(obj, points,manip , turnpenalty = 0.95): #takes the first 2 elements of the returned data(the draw elements) and puts it into trainable form
+def manipdraw(obj, points,manip , turnpenalty = 0.965): #takes the first 2 elements of the returned data(the draw elements) and puts it into trainable form
     state, move = obj
     assert(len(state) == len(move))
     state.reverse()
     move.reverse()
     mult = 1.0
+    
     for i in range(len(move)):
-        move[i] *=  mult/129
         if(manip == True):
-            move[i] *= points 
+            label = 0.5
+            label += (points*mult *move)/(129 * 2)
+        
+            move[i] = label
+        else:
+            move[i] = max(move[i], 0)
         mult *= turnpenalty
-    print('ass', move)
+    print('training move vals', move)
     return state, move
 
 
@@ -351,8 +356,6 @@ class customData(Dataset):
     def __init__(self,x,y):
         x = np.array(x)
         y = np.array(y)
-        # print(x.shape, x.size)
-        # print(y.shape, y.size)
         self.X = torch.FloatTensor(x)
         self.y = torch.FloatTensor(y)
         # self.X = torch.LongTensor(x)
@@ -374,10 +377,6 @@ def trainmodel(dataloader, model, loss_fn, optimizer):
 
         # compute error
         pred = model(x)
-        # y = torch.unsqueeze(y, 2)
-        # print(pred.size(), y.size())
-        # print(pred.size() == y.size())
-        # print(tuple(pred.size()))
         if((pred.size() != y.size())):
             y = y.reshape(tuple(pred.size()))
         loss = loss_fn(pred, y)
@@ -391,8 +390,8 @@ def trainmodel(dataloader, model, loss_fn, optimizer):
             loss, current = loss.item(), batch * len(x)
             print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
     except:#CHECK WHY THIS HAPPENS
-        print('a')
-        print(' ')
+        pass
+
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Using {device} device")
 
@@ -432,10 +431,6 @@ def TrainCycle(player1, models, opponent, train = (True, True, True), batches = 
         if(firstvals[0] == True):
             runfirst = True
             first_x, first_y = manipfirst(firstvals, points)
-            print(first_x)
-            print(' ')
-            print(first_x[0])
-            print(type(first_x), type(first_x[0]))
             #fullfirst_x += first_x.tolist()
             fullfirst_x += [first_x]
             fullfirst_y.append( first_y)
@@ -454,8 +449,6 @@ def TrainCycle(player1, models, opponent, train = (True, True, True), batches = 
     ###########################################
     
     
-    print('aaaa')
-    print(fullfirst_x)
 
     trans_draw = customData(fulldraw_x, fulldraw_y)
     trans_disc = customData(fulldiscard_x, fulldiscard_y)
@@ -494,7 +487,7 @@ def TrainCycle(player1, models, opponent, train = (True, True, True), batches = 
         drawepochs = 5
         drawoptimizer =  torch.optim.Adam(drawnet.parameters(), lr=learndraw)
         #loss_fn = torch.nn.CrossEntropyLoss()
-        drawloss_fn = torch.nn.MSELoss()
+        drawloss_fn =  torch.nn.BCELoss()
         drawmodel = drawnet
         for t in range(drawepochs):
             print('epoch ', t + 1, ' out of ', drawepochs, ' Drawnet')
@@ -541,7 +534,7 @@ def n_cycles(cycles, cyclelength , loadfrom, saveto, player1 = a.qlearner, oppon
         print('#*'*60)
         print(' ')
         print(' ')
-        pts.append(TrainCycle(player1, models, opponent, cyclelength=cyclelength, batches = (1,10,10), manip = manip))
+        pts.append(TrainCycle(player1, models, opponent, cyclelength=cyclelength, batches = (1,8,8), manip = manip))
         if((i+1)%interval == 0):
             savemodels(models, backup)
     savemodels(models, saveto)
@@ -557,12 +550,7 @@ def n_cycles(cycles, cyclelength , loadfrom, saveto, player1 = a.qlearner, oppon
 
      
 if (__name__ == "__main__"):
-    '''p1 = a.qlearner(["models/trainingmodels/start_init.pth","models/trainingmodels/draw_init.pth","models/trainingmodels/discard_init.pth"]  )
-    p2 = a.betterrandom('Bobby')
-    game = TrainGame(p1,p2)
-    vals = game.playgame()
-    print(vals[0])
-    print(vals[1])'''
+
     bench1 = ["models/trainingmodels/start_b1.pth","models/trainingmodels/draw_b1.pth","models/trainingmodels/discard_b1.pth"]#draw network slightly stabilized
     bench2 = ["models/trainingmodels/start_b2.pth","models/trainingmodels/draw_b2.pth","models/trainingmodels/discard_b2.pth"]#Discard function much better, draw function needs work
     aa = ["models/trainingmodels/start_init.pth","models/trainingmodels/draw_init.pth","models/trainingmodels/discard_init.pth"]
@@ -570,6 +558,6 @@ if (__name__ == "__main__"):
     cc = ["models/trainingmodels/start_1.pth","models/trainingmodels/draw_1.pth","models/trainingmodels/discard_1.pth"]
     dd = ["models/trainingmodels/start_2.pth","models/trainingmodels/draw_2.pth","models/trainingmodels/discard_2.pth"] 
     qq = ["models/trainingmodels/startq.pth","models/trainingmodels/drawq.pth","models/trainingmodels/discardq.pth"] 
-    n_cycles(5,10  ,bench2 , aa, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= False, manip = False)#, fromsave= True)
-    #n_cycles(1,1,cc, bench2, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
+    n_cycles(5  ,10  ,bench2 , aa, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= False, manip = False)#, fromsave= True)
+    #n_cycles(1,1,dd, qq, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
 

@@ -98,7 +98,9 @@ class DrawNet(nn.Module):
             
             nn.ReLU(),
             torch.nn.Dropout(p=0.5, inplace=False),
-            nn.Linear(128,1)
+            nn.Linear(128,1),
+            torch.nn.Sigmoid()
+            
 
         )
 

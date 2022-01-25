@@ -22,7 +22,7 @@ class agent:
         self.deadwood = (100,[])
 
     def __repr__(self):
-        #print(self.hand)
+
         return 'null agent object'
 
     def dealhand(self, deck):  # fills your hand from deck
@@ -169,7 +169,7 @@ class betterrandom(agent):
         try:
             new.remove(self.hand.gethand()[-1])
         except:
-            print('')
+            pass
         card = rand.choice(new)
         return str(self.hand.findcard(card))
 
@@ -263,11 +263,9 @@ class qlearner(agent):
         #brdstate2 = np.append(brdstate, toparr, 0)#boardstate to add to log
         input = torch.tensor(brd).float().unsqueeze(0)
         move = self.drawnet(input)[0].item()
-        print( self.drawnet(input))
-        print( self.drawnet(input)[0])
         print(f'learned draw move: {move}')
         self.turns[0].append(brd)
-        if (move < 0):#draw from discard pile
+        if (move < 0.500001):#draw from discard pile
             # ADD TO LOG
             self.turns[1].append(-1)
             #DO NOT add to hand state, just do it at the beginning of the discard
@@ -397,34 +395,54 @@ class forcetrainer(agent):#takes on decision tree based behaviour, logs moves, a
         # brdstate = np.append(self.state[0].flatten(), discarddeck.array(), 0)#boardstate minus top card
         # brdstate2 = np.append(brdstate, toparr, 0)#boardstate to add to log
         move = '1'
-    
+        val = 0
+        if(top[1] <= 7):
+            val += 0.1
+            if(top[1] <= 5 ):
+                val += 0.1
+                if(top[1] <= 3):
+                    val += 0.15
+                    if(top[1] == 1):
+                        val += 0.05
+                        
         for card in self.hand.gethand():
             if(card[1] == top[1]):#check for same face value
                 move =  '2'
+                val +=   .4
+                
         
         if((top[0], top[1] + 1) in self.hand.gethand()):
-            if(((top[0], top[1] + 2) in self.hand.gethand()) or ((top[0], top[1] -1) in self.hand.gethand()) ):
-                
+            val += .2
+            if(((top[0], top[1] + 2) in self.hand.gethand()) ):
+                val += 0.8
                 move = '2'
-        if(((top[0], top[1] - 1) in self.hand.gethand()) and ((top[0], top[1] - 2) in self.hand.gethand()) ):
+            if((top[0], top[1] -1) in self.hand.gethand()):
+                val += 0.8
+                move = '2'
+                
+        elif(((top[0], top[1] - 1) in self.hand.gethand())  ):
+            val += 0.2
+            if((top[0], top[1] - 2) in self.hand.gethand()): 
+                val += 0.8
+                move = '2'
             
-            move = '2'
             
-        roll = rand.randint(0,10)
+        roll = rand.randint(0,30)
         if(roll == 5):
             move = '1'
-        
-
+            val = 0
+            
+        val = min(val, 1)
         #move = self.drawnet(input)[0].item()
         self.turns[0].append(brd)
         if (move== '2'):#draw from discard pile
             # ADD TO LOG
-            self.turns[1].append(-1)
+            self.turns[1].append(val)
             #DO NOT add to hand state, just do it at the beginning of the discard
             return '2'
         else:#draw from facedown pile
             # ADD TO LOG
-            self.turns[1].append(1)
+            self.turns[1].append(min(val, 0.4999))
             return '1'
 
 
@@ -489,9 +507,13 @@ class forcetrainer(agent):#takes on decision tree based behaviour, logs moves, a
         
         for car in self.meldslist():
             probs[car[0] - 1][car[1]-1] = 0
+            
+        probs = softmax(probs.flatten(), axis = -1).reshape(4,13)
+        for car in self.meldslist():
+            probs[car[0] - 1][car[1]-1] = 0
         
         probs = probs.flatten()
-        probs = softmax(probs)
+        #probs = softmax(probs)
     ###########################
         #build input:
         brd = np.zeros((2, 4, 13))
