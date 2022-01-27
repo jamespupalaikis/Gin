@@ -321,7 +321,7 @@ def manipdraw(obj, points,manip , turnpenalty = 0.965): #takes the first 2 eleme
     for i in range(len(move)):
         if(manip == True):
             label = 0.5
-            label += (points*mult *move)/(129 * 2)
+            label += (points*mult *move[i])/(129 * 2)
         
             move[i] = label
         else:
@@ -423,7 +423,7 @@ def TrainCycle(player1, models, opponent, train = (True, True, True), batches = 
         points, firstvals, turnvals = game.playgame()
         
         fullpoints.append(points)
-    
+        
         print(f'GameScore: {points}')
         startnet, drawnet, discnet = p1.getmodels()
         
@@ -484,7 +484,7 @@ def TrainCycle(player1, models, opponent, train = (True, True, True), batches = 
     print('#' * 25)
     #######################################################
     if(train[1] == True):
-        drawepochs = 5
+        drawepochs =12
         drawoptimizer =  torch.optim.Adam(drawnet.parameters(), lr=learndraw)
         #loss_fn = torch.nn.CrossEntropyLoss()
         drawloss_fn =  torch.nn.BCELoss()
@@ -498,7 +498,7 @@ def TrainCycle(player1, models, opponent, train = (True, True, True), batches = 
     print('#' * 25)
 #################################################################################################################
     if(train[2] == True):
-        discepochs = 5
+        discepochs = 12
         discoptimizer = torch.optim.Adam(discnet.parameters(), lr=learndisc)
         #loss_fn = torch.nn.BCELoss()
         discloss_fn = torch.nn.MSELoss()
@@ -551,13 +551,13 @@ def n_cycles(cycles, cyclelength , loadfrom, saveto, player1 = a.qlearner, oppon
      
 if (__name__ == "__main__"):
 
-    bench1 = ["models/trainingmodels/start_b1.pth","models/trainingmodels/draw_b1.pth","models/trainingmodels/discard_b1.pth"]#draw network slightly stabilized
-    bench2 = ["models/trainingmodels/start_b2.pth","models/trainingmodels/draw_b2.pth","models/trainingmodels/discard_b2.pth"]#Discard function much better, draw function needs work
+    bench1_1 = ["models/trainingmodels/start_b1.pth","models/trainingmodels/draw_b1.pth","models/trainingmodels/discard_b1.pth"]#draw network slightly stabilized
+    bench2_1 = ["models/trainingmodels/start_b2.pth","models/trainingmodels/draw_b2.pth","models/trainingmodels/discard_b2.pth"]#Discard function much better, draw function needs work
     aa = ["models/trainingmodels/start_init.pth","models/trainingmodels/draw_init.pth","models/trainingmodels/discard_init.pth"]
     bb = ["models/trainingmodels/start_0.pth", "models/trainingmodels/draw_0.pth", "models/trainingmodels/discard_0.pth"]
     cc = ["models/trainingmodels/start_1.pth","models/trainingmodels/draw_1.pth","models/trainingmodels/discard_1.pth"]
     dd = ["models/trainingmodels/start_2.pth","models/trainingmodels/draw_2.pth","models/trainingmodels/discard_2.pth"] 
     qq = ["models/trainingmodels/startq.pth","models/trainingmodels/drawq.pth","models/trainingmodels/discardq.pth"] 
-    n_cycles(5  ,10  ,bench2 , aa, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= False, manip = False)#, fromsave= True)
-    #n_cycles(1,1,dd, qq, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
+    #n_cycles(5  ,10  ,aa, bb, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= False, manip = False)#, fromsave= True)
+    n_cycles(1,1,bb, qq, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
 
