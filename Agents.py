@@ -395,35 +395,35 @@ class forcetrainer(agent):#takes on decision tree based behaviour, logs moves, a
         # brdstate = np.append(self.state[0].flatten(), discarddeck.array(), 0)#boardstate minus top card
         # brdstate2 = np.append(brdstate, toparr, 0)#boardstate to add to log
         move = '1'
-        val = 0
+        val = 1.1
         if(top[1] <= 7):
-            val += 0.1
+            val -= 0.05
             if(top[1] <= 5 ):
-                val += 0.1
+                val -= 0.05
                 if(top[1] <= 3):
-                    val += 0.15
+                    val -= 0.1
                     if(top[1] == 1):
-                        val += 0.05
+                        val -= 0.1
                         
         for card in self.hand.gethand():
             if(card[1] == top[1]):#check for same face value
                 move =  '2'
-                val +=   .4
+                val -=   .4
                 
         
         if((top[0], top[1] + 1) in self.hand.gethand()):
-            val += .2
+            val -= .3
             if(((top[0], top[1] + 2) in self.hand.gethand()) ):
-                val += 0.8
+                val -= 0.7
                 move = '2'
             if((top[0], top[1] -1) in self.hand.gethand()):
-                val += 0.8
+                val -= 0.7
                 move = '2'
                 
         elif(((top[0], top[1] - 1) in self.hand.gethand())  ):
-            val += 0.2
+            val -= 0.3
             if((top[0], top[1] - 2) in self.hand.gethand()): 
-                val += 0.8
+                val -= 0.7
                 move = '2'
             
             
@@ -437,12 +437,13 @@ class forcetrainer(agent):#takes on decision tree based behaviour, logs moves, a
         self.turns[0].append(brd)
         if (move== '2'):#draw from discard pile
             # ADD TO LOG
-            self.turns[1].append(val)
+            self.turns[1].append(max(val, 0))
+            
             #DO NOT add to hand state, just do it at the beginning of the discard
             return '2'
         else:#draw from facedown pile
             # ADD TO LOG
-            self.turns[1].append(min(val, 0.4999))
+            self.turns[1].append(min(val, 1))
             return '1'
 
 
