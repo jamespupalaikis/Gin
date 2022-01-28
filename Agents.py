@@ -165,6 +165,7 @@ class betterrandom(agent):
         dead = sum(deadv[:-1])
         if(dead <= 10 ):
             return 'k'
+        #TODO: this bot can still discard the most recently drawn card
         new = copy.deepcopy( self.deadwood[1])
         try:
             new.remove(self.hand.gethand()[-1])
@@ -395,7 +396,7 @@ class forcetrainer(agent):#takes on decision tree based behaviour, logs moves, a
         # brdstate = np.append(self.state[0].flatten(), discarddeck.array(), 0)#boardstate minus top card
         # brdstate2 = np.append(brdstate, toparr, 0)#boardstate to add to log
         move = '1'
-        val = 1.1
+        val = 1
         if(top[1] <= 7):
             val -= 0.05
             if(top[1] <= 5 ):

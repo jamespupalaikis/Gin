@@ -484,7 +484,7 @@ def TrainCycle(player1, models, opponent, train = (True, True, True), batches = 
     print('#' * 25)
     #######################################################
     if(train[1] == True):
-        drawepochs =12
+        drawepochs = 32
         drawoptimizer =  torch.optim.Adam(drawnet.parameters(), lr=learndraw)
         #loss_fn = torch.nn.CrossEntropyLoss()
         drawloss_fn =  torch.nn.BCELoss()
@@ -498,7 +498,7 @@ def TrainCycle(player1, models, opponent, train = (True, True, True), batches = 
     print('#' * 25)
 #################################################################################################################
     if(train[2] == True):
-        discepochs = 12
+        discepochs = 32
         discoptimizer = torch.optim.Adam(discnet.parameters(), lr=learndisc)
         #loss_fn = torch.nn.BCELoss()
         discloss_fn = torch.nn.MSELoss()
@@ -553,11 +553,12 @@ if (__name__ == "__main__"):
 
     bench1_1 = ["models/trainingmodels/start_b1.pth","models/trainingmodels/draw_b1.pth","models/trainingmodels/discard_b1.pth"]#draw network slightly stabilized
     bench2_1 = ["models/trainingmodels/start_b2.pth","models/trainingmodels/draw_b2.pth","models/trainingmodels/discard_b2.pth"]#Discard function much better, draw function needs work
+    bench1_1 = ["models/trainingmodels/start_b2.pth","models/trainingmodels/draw_b2.pth","models/trainingmodels/discard_b2.pth"]#strong, stable-ish, needs more high-epoch training
     aa = ["models/trainingmodels/start_init.pth","models/trainingmodels/draw_init.pth","models/trainingmodels/discard_init.pth"]
     bb = ["models/trainingmodels/start_0.pth", "models/trainingmodels/draw_0.pth", "models/trainingmodels/discard_0.pth"]
     cc = ["models/trainingmodels/start_1.pth","models/trainingmodels/draw_1.pth","models/trainingmodels/discard_1.pth"]
     dd = ["models/trainingmodels/start_2.pth","models/trainingmodels/draw_2.pth","models/trainingmodels/discard_2.pth"] 
     qq = ["models/trainingmodels/startq.pth","models/trainingmodels/drawq.pth","models/trainingmodels/discardq.pth"] 
-    #n_cycles(5  ,10  ,aa, bb, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= False, manip = False)#, fromsave= True)
-    n_cycles(1,1,bb, qq, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
+    n_cycles(5  ,10  ,bench1_1, bb, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= False, manip = False)#, fromsave= True)
+    #n_cycles(1,1,cc, bench1_1, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
 
