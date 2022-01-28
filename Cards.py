@@ -291,6 +291,8 @@ class hand:
         face = arrayindex%13 + 1
         return (suit, face)
     
+    def addto(self, card):
+        self.cards.append(card)
 
 
 ########################################################################################################################

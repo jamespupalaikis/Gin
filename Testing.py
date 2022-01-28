@@ -78,3 +78,10 @@ unison_shuffled_copies(f, g)
 print(f, g)
 
 #print(softmax(brd2.flatten()))
+
+ass = [1,2,3,4]
+ass.remove(3)
+
+print(ass)
+
+

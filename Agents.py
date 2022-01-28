@@ -20,6 +20,7 @@ class agent:
         self.hand = c.hand()
         self.melds = []
         self.deadwood = (100,[])
+        self.hold = [] #hold a card drawn from faceup pile so it cant be discarded
 
     def __repr__(self):
 
@@ -28,8 +29,10 @@ class agent:
     def dealhand(self, deck):  # fills your hand from deck
         self.hand.starthand(deck)
 
-    def updatemelds(self):#updates the meld and deadwood info
-        deadval, [melds, dead] = recurse(self.gethand())
+    def updatemelds(self, cards = None):#updates the meld and deadwood info
+        if(cards is None):
+            cards = self.gethand()
+        deadval, [melds, dead] = recurse(cards)
         self.deadwood = (deadval, dead)
         self.melds = melds
 
@@ -135,7 +138,7 @@ class randombot(agent):
         return str(rand.randint(1,2))
     def discardmove(self,discarddeck):
         moves = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'k']
-        r = rand.randint(0,11)
+        r = rand.randint(0,10)
         return moves[r]
 
 
@@ -159,19 +162,20 @@ class betterrandom(agent):
 
         return
     def discardmove(self,discarddeck):#discard a random deadwood that is not part of a meld
-        self.updatemelds()
+        self.updatemelds(self.gethand() + self.hold)
         deadv = self.deadvals()
         deadv.sort()
         dead = sum(deadv[:-1])
         if(dead <= 10 ):
             return 'k'
         #TODO: this bot can still discard the most recently drawn card
-        new = copy.deepcopy( self.deadwood[1])
-        try:
-            new.remove(self.hand.gethand()[-1])
-        except:
+        
+        
+        
+        card = rand.choice(dead)
+        if(self.hold != []):
             pass
-        card = rand.choice(new)
+        self.hand.addto(self.hold.pop())
         return str(self.hand.findcard(card))
 
         return

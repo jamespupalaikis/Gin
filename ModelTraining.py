@@ -287,7 +287,8 @@ class TrainGame: #this will run a single game, return a result (reward/score), a
                 self.playTurn(other)
                 return
             elif (move == '2'):
-                player.hand.drawfrom(self.discarddeck)
+                #player.hand.drawfrom(self.discarddeck)
+                player.hold.append(self.discarddeck.deal())#add it to hold so it cant be discarded
                 self.discard(player)
                 if ((self.knocker[0] is None) == False):  # gotta put after discard to check for a knock
                     return
@@ -553,12 +554,13 @@ if (__name__ == "__main__"):
 
     bench1_1 = ["models/trainingmodels/start_b1.pth","models/trainingmodels/draw_b1.pth","models/trainingmodels/discard_b1.pth"]#draw network slightly stabilized
     bench2_1 = ["models/trainingmodels/start_b2.pth","models/trainingmodels/draw_b2.pth","models/trainingmodels/discard_b2.pth"]#Discard function much better, draw function needs work
-    bench1_1 = ["models/trainingmodels/start_b2.pth","models/trainingmodels/draw_b2.pth","models/trainingmodels/discard_b2.pth"]#strong, stable-ish, needs more high-epoch training
+    bench1_1 = ["models/trainingmodels/start_b2.pth","models/trainingmodels/draw_b2.pth","models/trainingmodels/discard_b2.pth"]
+    #strong, stable-ish, needs more high-epoch training. May be getting interference from discard deck, may want to work that into rewards
     aa = ["models/trainingmodels/start_init.pth","models/trainingmodels/draw_init.pth","models/trainingmodels/discard_init.pth"]
     bb = ["models/trainingmodels/start_0.pth", "models/trainingmodels/draw_0.pth", "models/trainingmodels/discard_0.pth"]
     cc = ["models/trainingmodels/start_1.pth","models/trainingmodels/draw_1.pth","models/trainingmodels/discard_1.pth"]
     dd = ["models/trainingmodels/start_2.pth","models/trainingmodels/draw_2.pth","models/trainingmodels/discard_2.pth"] 
     qq = ["models/trainingmodels/startq.pth","models/trainingmodels/drawq.pth","models/trainingmodels/discardq.pth"] 
-    n_cycles(5  ,10  ,bench1_1, bb, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= False, manip = False)#, fromsave= True)
-    #n_cycles(1,1,cc, bench1_1, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
+    #n_cycles(5  ,10  ,bench1_1, bb, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= False, manip = False)#, fromsave= True)
+    n_cycles(1,1,cc, bench1_1, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
 
