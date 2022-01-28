@@ -171,14 +171,19 @@ class betterrandom(agent):
         #TODO: this bot can still discard the most recently drawn card
         
         
+        new = copy.copy(self.deadwood[1])
         
-        card = rand.choice(dead)
         if(self.hold != []):
-            pass
-        self.hand.addto(self.hold.pop())
+            try:
+                new.remove(self.hold[0])
+            except:
+                pass
+            self.hand.addto(self.hold.pop())
+            
+        card = rand.choice(new)
         return str(self.hand.findcard(card))
 
-        return
+
     def drawmove(self, discarddeck):#similar to initialmove, check if faceup card matches held values
         top = discarddeck.peek()
         move = '1'
@@ -282,13 +287,17 @@ class qlearner(agent):
         return
 
     def discardmove(self,discarddeck):
-        last = self.gethand()[-1]
+        if(self.hold == []):
+            last = self.hand.gethand()[-1]
+        else:
+            last = self.hold[0]
+            
         assert (self.state[0][last[0] - 1][last[1] - 1] == 0)  # shouldnt be in hand before
         self.state[0][last[0] - 1][last[1] - 1] = 1  # set hand value to 1
         #log last card drawn as in hand
         ########################
         # LOOK FOR KNOCK!!!
-        self.updatemelds()
+        self.updatemelds(self.hand.gethand() + self.hold)
         deadv = self.deadvals()
         deadv.sort()
         dead = sum(deadv[:-1])
@@ -315,6 +324,8 @@ class qlearner(agent):
                     self.turns[4].append(ind)
     
                     self.state[0][translatedcard[0] - 1][translatedcard[1] - 1] = 0  #remove the card from hand
+                    if(self.hold != []):
+                        self.hand.addto(self.hold.pop())
                     return self.hand.findcard(translatedcard)
 
 
@@ -453,10 +464,13 @@ class forcetrainer(agent):#takes on decision tree based behaviour, logs moves, a
 
 
     def discardmove(self,discarddeck):
-        last = self.gethand()[-1]
+        if(self.hold == []):
+            last = self.hand.gethand()[-1]
+        else:
+            last = self.hold[0]
         assert (self.state[0][last[0] - 1][last[1] - 1] == 0)  # shouldnt be in hand before
         self.state[0][last[0] - 1][last[1] - 1] = 1  # set hand value to 1
-        self.updatemelds()
+        self.updatemelds(self.hand.gethand() + self.hold)
         deadv = self.deadvals()
         deadv.sort()
         dead = sum(deadv[:-1])
@@ -468,10 +482,12 @@ class forcetrainer(agent):#takes on decision tree based behaviour, logs moves, a
     
         
         viables = copy.copy(self.deadwood[1])
-        try:
-            viables.remove(last)
-        except:
-            print(' ')
+        if(self.hold != []):
+            try:
+                viables.remove(self.hold[0])
+            except:
+                pass
+            self.hand.addto(self.hold.pop())
         secondary = []
         # move =  str(self.hand.findcard(card))
         #probs = self.singlearray(card).flatten()
