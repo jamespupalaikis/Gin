@@ -19,6 +19,8 @@ def flatten(list_of_lists):
 def lessthan(left,
              right):  # comparison function returning true if left is lower value than right (by suit, then face value)
     if (left[0] == right[0]):
+        if(left[1] == right[1]):
+            print(left, right)
         assert (left[1] != right[1])
         return (left[1] < right[1])
     else:

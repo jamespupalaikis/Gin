@@ -56,9 +56,7 @@ class TrainGame: #this will run a single game, return a result (reward/score), a
 
         self.learner.updatemelds()
         self.player2.updatemelds()
-        #points for player 1
-        #points = self.getwinner()
-        #result = self.win(points)
+
 
 
 
@@ -88,10 +86,10 @@ class TrainGame: #this will run a single game, return a result (reward/score), a
     def getwinner(self):
         self.learner.updatemelds()
         self.player2.updatemelds()
-        #p1 = recurse(self.learner.gethand())[0]  # points for player 1
-        #p2 = recurse(self.player2.gethand())[0]  # ... player 2
         p1 = self.learner.deadwood[0]
         p2 = self.player2.deadwood[0]
+        self.learner.hold = []
+        self.player2.hold = []
         if (p1 < p2):
             points = p2 - p1
             if (self.knocker[0] == self.player2):
@@ -127,6 +125,7 @@ class TrainGame: #this will run a single game, return a result (reward/score), a
                 else:
                     points = -25
             else:
+                
                 return 0
 
         return points
@@ -135,8 +134,6 @@ class TrainGame: #this will run a single game, return a result (reward/score), a
 
 
     def knock(self, player):
-        #player.updatemelds()
-        # tally = recurse(player.gethand())
         deadwood = player.deadwood[1]
         deadvals = [c.valuedict[card[1]] for card in deadwood]
         deadvals.sort()
@@ -553,14 +550,14 @@ def n_cycles(cycles, cyclelength , loadfrom, saveto, player1 = a.qlearner, oppon
 if (__name__ == "__main__"):
 
     bench1_1 = ["models/trainingmodels/start_b1.pth","models/trainingmodels/draw_b1.pth","models/trainingmodels/discard_b1.pth"]#draw network slightly stabilized
-    bench2_1 = ["models/trainingmodels/start_b2.pth","models/trainingmodels/draw_b2.pth","models/trainingmodels/discard_b2.pth"]#Discard function much better, draw function needs work
-    bench1_1 = ["models/trainingmodels/start_b2.pth","models/trainingmodels/draw_b2.pth","models/trainingmodels/discard_b2.pth"]
     #strong, stable-ish, needs more high-epoch training. May be getting interference from discard deck, may want to work that into rewards
+    bench2 = ["models/trainingmodels/start_b2.pth","models/trainingmodels/draw_b2.pth","models/trainingmodels/discard_b2.pth"]
+    #even more stable, some perfect games even
     aa = ["models/trainingmodels/start_init.pth","models/trainingmodels/draw_init.pth","models/trainingmodels/discard_init.pth"]
     bb = ["models/trainingmodels/start_0.pth", "models/trainingmodels/draw_0.pth", "models/trainingmodels/discard_0.pth"]
     cc = ["models/trainingmodels/start_1.pth","models/trainingmodels/draw_1.pth","models/trainingmodels/discard_1.pth"]
     dd = ["models/trainingmodels/start_2.pth","models/trainingmodels/draw_2.pth","models/trainingmodels/discard_2.pth"] 
     qq = ["models/trainingmodels/startq.pth","models/trainingmodels/drawq.pth","models/trainingmodels/discardq.pth"] 
-    #n_cycles(5  ,10  ,bench1_1, bb, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= False, manip = False)#, fromsave= True)
-    n_cycles(1,1,cc, bench1_1, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
+    #n_cycles(5  ,10  ,cc, dd, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= False, manip = False)#, fromsave= True)
+    n_cycles(1,1,dd, bench2, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
 

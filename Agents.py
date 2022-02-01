@@ -179,6 +179,7 @@ class betterrandom(agent):
             except:
                 pass
             self.hand.addto(self.hold.pop())
+            self.hold = []
             
         card = rand.choice(new)
         return str(self.hand.findcard(card))
@@ -326,6 +327,7 @@ class qlearner(agent):
                     self.state[0][translatedcard[0] - 1][translatedcard[1] - 1] = 0  #remove the card from hand
                     if(self.hold != []):
                         self.hand.addto(self.hold.pop())
+                        self.hold = []
                     return self.hand.findcard(translatedcard)
 
 
@@ -488,6 +490,7 @@ class forcetrainer(agent):#takes on decision tree based behaviour, logs moves, a
             except:
                 pass
             self.hand.addto(self.hold.pop())
+            self.hold = []
         secondary = []
         # move =  str(self.hand.findcard(card))
         #probs = self.singlearray(card).flatten()
