@@ -404,7 +404,7 @@ def savemodels(models, saveto):
     print('All Models Saved')
 
 
-def TrainCycle(player1, models, opponent, train = (True, True, True), batches = (1,1,1), learning = (0.001, 0.0001, 0.0001), cyclelength = 1 , manip = True):
+def TrainCycle(player1, models, opponent, train = (True, True, True), batches = (1,1,1), learning = (0.001, 0.00005, 0.00005), cyclelength = 1 , manip = True):
     fulldraw_x, fulldraw_y, fulldiscard_x, fulldiscard_y, fullfirst_x, fullfirst_y = [],[],[],[],[],[]
     batchstart, batchdraw, batchdisc = batches
     learnstart, learndraw, learndisc = learning
@@ -558,6 +558,6 @@ if (__name__ == "__main__"):
     cc = ["models/trainingmodels/start_1.pth","models/trainingmodels/draw_1.pth","models/trainingmodels/discard_1.pth"]
     dd = ["models/trainingmodels/start_2.pth","models/trainingmodels/draw_2.pth","models/trainingmodels/discard_2.pth"] 
     qq = ["models/trainingmodels/startq.pth","models/trainingmodels/drawq.pth","models/trainingmodels/discardq.pth"] 
-    #n_cycles(5  ,10  ,cc, dd, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= False, manip = False)#, fromsave= True)
-    n_cycles(1,1,dd, bench2, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
+    #n_cycles(5  ,15  ,bench2, bb, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= False, manip = False)#, fromsave= True)
+    n_cycles(1,1,bb, qq, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
 
