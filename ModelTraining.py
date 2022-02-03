@@ -31,7 +31,9 @@ def unison_shuffled_copies(a, b):
     
 #################################
 
-class TrainGame: #this will run a single game, return a result (reward/score), and a set of moves made throughout the game
+class TrainGame: 
+# this will run a single game, return a result (reward/score), 
+# and a set of moves made throughout the game
     def __init__(self, qlearner,player2 ):
         startplayer = rand.randint(1,2)
         self.knocker = (None,None) #FIRST Player is knocker
@@ -230,14 +232,14 @@ class TrainGame: #this will run a single game, return a result (reward/score), a
                 self.discarddeck.add(self.maindeck.deal())
                 # self.state = 'play'
                 print('playing turns normally now')
-                print('###################################################################################')
+                print('#'*82)
                 self.playTurn(other)
                 return
                 # initiate turn function for other player
             elif (move == 'pass'):
                 if (index == 1):
                     print('playing turns normally now')
-                    print('###################################################################################')
+                    print('#'*82)
                     self.playTurn(other)
                     return
                 elif (index == 0):
@@ -280,7 +282,7 @@ class TrainGame: #this will run a single game, return a result (reward/score), a
                 self.discard(player)
                 if ((self.knocker[0] is None) == False):  # gotta put after discard to check for a knock
                     return
-                print('###################################################################################')
+                print('#'*82)
                 self.playTurn(other)
                 return
             elif (move == '2'):
@@ -289,7 +291,7 @@ class TrainGame: #this will run a single game, return a result (reward/score), a
                 self.discard(player)
                 if ((self.knocker[0] is None) == False):  # gotta put after discard to check for a knock
                     return
-                print('###################################################################################')
+                print('#'*82)
                 self.playTurn(other)
                 return
                 # initiate turn function for other player
@@ -510,7 +512,9 @@ def TrainCycle(player1, models, opponent, train = (True, True, True), batches = 
         # RETURN vals and labels, to assemble back together and train on
     return points
 
-def n_cycles(cycles, cyclelength , loadfrom, saveto, player1 = a.qlearner, opponent = a.betterrandom(),  interval = 4, fromsave= False, addtopoints = True , manip = True):
+def n_cycles(cycles, cyclelength , loadfrom, saveto, player1 = a.qlearner, 
+             opponent = a.betterrandom(),  interval = 4, fromsave= False, 
+             addtopoints = True , manip = True):
     backup = ["models/trainingmodels/start_backup.pth", "models/trainingmodels/draw_backup.pth",
               "models/trainingmodels/discard_backup.pth"]
     if(fromsave == True):
@@ -553,11 +557,12 @@ if (__name__ == "__main__"):
     #strong, stable-ish, needs more high-epoch training. May be getting interference from discard deck, may want to work that into rewards
     bench2 = ["models/trainingmodels/start_b2.pth","models/trainingmodels/draw_b2.pth","models/trainingmodels/discard_b2.pth"]
     #even more stable, some perfect games even
+    bench3 = ["models/trainingmodels/start_b3.pth","models/trainingmodels/draw_b3.pth","models/trainingmodels/discard_b3.pth"]
     aa = ["models/trainingmodels/start_init.pth","models/trainingmodels/draw_init.pth","models/trainingmodels/discard_init.pth"]
     bb = ["models/trainingmodels/start_0.pth", "models/trainingmodels/draw_0.pth", "models/trainingmodels/discard_0.pth"]
     cc = ["models/trainingmodels/start_1.pth","models/trainingmodels/draw_1.pth","models/trainingmodels/discard_1.pth"]
     dd = ["models/trainingmodels/start_2.pth","models/trainingmodels/draw_2.pth","models/trainingmodels/discard_2.pth"] 
     qq = ["models/trainingmodels/startq.pth","models/trainingmodels/drawq.pth","models/trainingmodels/discardq.pth"] 
-    n_cycles(5  ,15  ,cc, dd, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= False, manip = False)#, fromsave= True)
-    #n_cycles(1,1,cc, qq, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
+    #n_cycles(10  ,15  ,cc, dd, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= False, manip = False)#, fromsave= True)
+    n_cycles(1,1,dd, bench3, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
 
