@@ -65,19 +65,39 @@ class TrainGame:
 
 
     def playgame(self):
+        run = True
+        self.discarddeck.add(self.maindeck.deal())
         res = self.dealphase(self.start)
-        if(res == 1):#if the first player passes, return 1 and give other player turn
-            self.dealphase(self.other, index = 1)#Dont need "index!!!!
+        if(res == 0):
             
-            turns = (self.start, self.other)
-        else:
             turns = (self.other, self.start)
+            
+            disc = self.discard(self.start)#check discard for knock
+            if(disc == 1):
+                run = False
+            
+        print('#'*82)
+        if(res == 1):#if the first player passes, return 1 and give other player turn
+            res2 = self.dealphase(self.other)
+            
+            if(res2 == 0):#if p2 drew, discard and check for knock
+                disc = self.discard(self.other)
+                if(disc == 1):
+                    run = False
+                    
+            print('#'*82)
+            turns = (self.start, self.other)
+            
             # this block determines turn order after
             
-        while(True):
+        if(self.discarddeck.cardcount() == 0):
+            self.discarddeck.add(self.maindeck.deal())
+            
+        while(run == True):
         
             self.playTurn(turns[0])
             res = self.discard(turns[0])
+            print('#'*82)
             # result of discard can be 2 options: 
             # a 0 indicates a normal turn, and will continue normally
             # a 1 passed will indicate a knock, or that cards are all out. 
@@ -86,7 +106,8 @@ class TrainGame:
             if(res == 1):
                 break
             self.playTurn(turns[1])
-            res = self.discard(turns[0])
+            res = self.discard(turns[1])
+            print('#'*82)
             if(res == 1):
                 break
         
@@ -94,7 +115,7 @@ class TrainGame:
         
 
         points = self.getwinner()
-        return points,self.learner.first, self.learner
+        return points,self.learner.first, self.learner.turns
     # above line could possibly be moved to a "training game" function. This
     # could allow for the game class and the training file to be separated, 
     # and the game function being multipurposed for use with the gameplay interface
@@ -215,10 +236,11 @@ class TrainGame:
                     print(player.deadwood)
                     player.hand.discardto(player.gethighdeadcard(), self.discarddeck)
                     print(player.deadwood)
-                    return
+                    return 1
+                
                 print("You can't knock right now!!!!")
 
-                # print('ass', type(discardindex))
+
             
             elif ((discardindex > (player.cardcount() - 1)) or (discardindex < 0)):
                 print('Not a valid number!')
@@ -227,28 +249,28 @@ class TrainGame:
                 print(f'discarded {self.interpret(dcard)}')
                 player.hand.discardto(dcard, self.discarddeck)  # TODO: implement this at agent level
                 player.sorthand()
-                #player.updatemelds()
 
-                #print(
-                #    f"Current Melds: {self.interpretmelds(player.melds)}")  # recurse() gives (deadwoodvalue, [[melds], [deadwood']])
+
+            
                 print(f"Deadwood value: {player.deadwood[0]}")
-                return
+                return 0
+            
             elif (discardindex == 'quit'):
                 assert (True == False)
+                
             print('Enter a valid input!')
 
 
-    def dealphase(self, first,
-                  index=0):  # first will pass the hand of the player BEING DEALT TO. Index is a 0, unless the previous player has passed
+    def dealphase(self, first):  
+        # first will pass the hand of the player BEING DEALT TO. Index is a 0, unless the previous player has passed
         if (first == self.learner):
             other = self.player2
-            self.state = 'p1deal'
+
         else:
             other = self.learner
-            self.state = 'p2deal'
         # other will be the player that is not drawing
-        if (index == 0):
-            self.discarddeck.add(self.maindeck.deal())
+        
+     
         print(f"{first.name}'s Turn Now")
         print(f'Discard Deck Faceup Card: {self.interpret(self.discarddeck.peek())}')
         first.printhand()
@@ -258,27 +280,15 @@ class TrainGame:
             move = first.initialmove(self.discarddeck)
             if (move == 'draw'):
                 first.hand.drawfrom(self.discarddeck)
-                self.discard(first)
-                if ((self.knocker[0] is None) == False):  # gotta put after discard to check for a knock
-                    return 
-                self.discarddeck.add(self.maindeck.deal())
+                
+                
                 # self.state = 'play'
                 print('playing turns normally now')
-                print('#'*82)
 
                 return 0
                 # initiate turn function for other player
             elif (move == 'pass'):
-                if (index == 1):
-                    print('playing turns normally now')
-                    print('#'*82)
-                    self.playTurn(other)
-                    return (0)
-                #time to play normally
-                elif (index == 0):
-                    #self.dealphase(other, index=1)
-                    return 1
-                #give other player turn to draw
+                return 1
 
             elif (move == 'quit'):
                 print('ABORTING')
@@ -313,20 +323,19 @@ class TrainGame:
                 
                 print(f'You drew: {self.interpret(self.maindeck.peek())}')
                 player.hand.drawfrom(self.maindeck)
-                self.discard(player)
-                if ((self.knocker[0] is None) == False):  # gotta put after discard to check for a knock
-                    return
-                print('#'*82)
-                
+                #self.discard(player)
+                #if ((self.knocker[0] is None) == False):  # gotta put after discard to check for a knock
+                #    return
+
                 return
             
             elif (move == '2'):
                 #player.hand.drawfrom(self.discarddeck)
                 player.hold.append(self.discarddeck.deal())#add it to hold so it cant be discarded
-                self.discard(player)
-                if ((self.knocker[0] is None) == False):  # gotta put after discard to check for a knock
-                    return
-                print('#'*82)
+                #self.discard(player)
+                #if ((self.knocker[0] is None) == False):  # gotta put after discard to check for a knock
+                #    return
+
                 return
                 # initiate turn function for other player
 
