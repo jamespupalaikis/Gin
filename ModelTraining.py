@@ -499,7 +499,8 @@ def TrainCycle(player1, models, opponent, train = (True, True, True), batches = 
         discepochs = 32
         discoptimizer = torch.optim.Adam(discnet.parameters(), lr=learndisc)
         #loss_fn = torch.nn.BCELoss()
-        discloss_fn = torch.nn.MSELoss()
+        #discloss_fn = torch.nn.MSELoss()
+        discloss_fn = torch.nn.CrossEntropyLoss()
         discmodel = discnet
         for t in range(discepochs):
             print('epoch ', t + 1, ' out of ', discepochs, ' Discardnet')
@@ -552,12 +553,13 @@ if (__name__ == "__main__"):
     bench1_1 = ["models/trainingmodels/start_b1.pth","models/trainingmodels/draw_b1.pth","models/trainingmodels/discard_b1.pth"]#draw network slightly stabilized
     #strong, stable-ish, needs more high-epoch training. May be getting interference from discard deck, may want to work that into rewards
     bench2 = ["models/trainingmodels/start_b2.pth","models/trainingmodels/draw_b2.pth","models/trainingmodels/discard_b2.pth"]
+    bench3 = ["models/trainingmodels/start_b3.pth","models/trainingmodels/draw_b3.pth","models/trainingmodels/discard_b3.pth"]
     #even more stable, some perfect games even
     aa = ["models/trainingmodels/start_init.pth","models/trainingmodels/draw_init.pth","models/trainingmodels/discard_init.pth"]
     bb = ["models/trainingmodels/start_0.pth", "models/trainingmodels/draw_0.pth", "models/trainingmodels/discard_0.pth"]
     cc = ["models/trainingmodels/start_1.pth","models/trainingmodels/draw_1.pth","models/trainingmodels/discard_1.pth"]
     dd = ["models/trainingmodels/start_2.pth","models/trainingmodels/draw_2.pth","models/trainingmodels/discard_2.pth"] 
     qq = ["models/trainingmodels/startq.pth","models/trainingmodels/drawq.pth","models/trainingmodels/discardq.pth"] 
-    n_cycles(5  ,15  ,cc, dd, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= False, manip = False)#, fromsave= True)
-    #n_cycles(1,1,cc, qq, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
+    #n_cycles(5  ,15  ,cc, dd, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= False, manip = False)#, fromsave= True)
+    n_cycles(1,1,dd,bench3 , player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
 
