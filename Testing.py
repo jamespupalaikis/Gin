@@ -1,3 +1,8 @@
+#this is a sandbox for manual testing
+
+
+
+
 import Cards as c
 import ModelTraining as m
 import Agents as a
@@ -7,6 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import numpy.random as rand
 from scipy.special import softmax
+
 #import torchsummary
 
 mydick = c.deck(empty = True)
