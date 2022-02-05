@@ -1,3 +1,8 @@
+#this is a sandbox for manual testing
+
+
+
+
 import Cards as c
 import ModelTraining as m
 import Agents as a

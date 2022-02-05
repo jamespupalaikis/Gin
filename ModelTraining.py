@@ -1,26 +1,14 @@
 #This will be an (eventually) headless implementation of PlayGame that plays games between a NN Qlearning AI and a given computer adversary
 #It will allow for training between each game based on a recorded game log of  moves made.
 import numpy as np
-
-import Cards as c
-from Cards import recurse
 import Agents as a
 import numpy.random as rand
 import BuildModel as mod
-
 from Gameplay import Game
 
 #######
-
 import torch
-from torch import nn
 from torch.utils.data import DataLoader, Dataset
-from torchvision import datasets
-from torchvision.transforms import ToTensor, Lambda, Compose
-from sklearn.utils import shuffle
-import matplotlib.pyplot as plt
-
-
 
 
 #################################
@@ -33,7 +21,8 @@ def unison_shuffled_copies(a, b):
     
 #################################
 
-
+# GLOBALS
+output = False
 
 ########################################################################################################################
 
@@ -121,7 +110,7 @@ def trainmodel(dataloader, model, loss_fn, optimizer):
         loss.backward()
         optimizer.step()
     try:
-        if (batch % 1 == 0):
+        if (batch % 10 == 0):
             loss, current = loss.item(), batch * len(x)
             print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
     except:#CHECK WHY THIS HAPPENS
@@ -154,7 +143,7 @@ def TrainCycle(player1, models, opponent, train = (True, True, True), batches = 
         print('')
         p1 = player1(models)
         p2 = opponent
-        mygame = Game(p1, p2)
+        mygame = Game(p1, p2, output=output)
         points, firstvals, turnvals = mygame.playgame_trainreturn()
         
         fullpoints.append(points)
@@ -251,7 +240,8 @@ def TrainCycle(player1, models, opponent, train = (True, True, True), batches = 
 def n_cycles(cycles, cyclelength , loadfrom, saveto, player1 = a.qlearner, 
              opponent = a.betterrandom(),  interval = 4, fromsave= False, 
              addtopoints = True , manip = True):
-    backup = ["models/trainingmodels/start_backup.pth", "models/trainingmodels/draw_backup.pth",
+    backup = ["models/trainingmodels/start_backup.pth", 
+              "models/trainingmodels/draw_backup.pth",
               "models/trainingmodels/discard_backup.pth"]
     if(fromsave == True):
         loadfrom = backup
@@ -289,17 +279,39 @@ def n_cycles(cycles, cyclelength , loadfrom, saveto, player1 = a.qlearner,
      
 if (__name__ == "__main__"):
 
-    bench1_1 = ["models/trainingmodels/start_b1.pth","models/trainingmodels/draw_b1.pth","models/trainingmodels/discard_b1.pth"]#draw network slightly stabilized
+    bench1_1 = ["models/trainingmodels/start_b1.pth",
+                "models/trainingmodels/draw_b1.pth",
+                "models/trainingmodels/discard_b1.pth"]#draw network slightly stabilized
     #strong, stable-ish, needs more high-epoch training. May be getting interference from discard deck, may want to work that into rewards
-    bench2 = ["models/trainingmodels/start_b2.pth","models/trainingmodels/draw_b2.pth","models/trainingmodels/discard_b2.pth"]
-    bench3 = ["models/trainingmodels/start_b3.pth","models/trainingmodels/draw_b3.pth","models/trainingmodels/discard_b3.pth"]
+    bench2 = ["models/trainingmodels/start_b2.pth",
+              "models/trainingmodels/draw_b2.pth",
+              "models/trainingmodels/discard_b2.pth"]
+    
+    bench3 = ["models/trainingmodels/start_b3.pth",
+              "models/trainingmodels/draw_b3.pth",
+              "models/trainingmodels/discard_b3.pth"]
     #even more stable, some perfect games even
-    bench3 = ["models/trainingmodels/start_b3.pth","models/trainingmodels/draw_b3.pth","models/trainingmodels/discard_b3.pth"]
-    aa = ["models/trainingmodels/start_init.pth","models/trainingmodels/draw_init.pth","models/trainingmodels/discard_init.pth"]
-    bb = ["models/trainingmodels/start_0.pth", "models/trainingmodels/draw_0.pth", "models/trainingmodels/discard_0.pth"]
-    cc = ["models/trainingmodels/start_1.pth","models/trainingmodels/draw_1.pth","models/trainingmodels/discard_1.pth"]
-    dd = ["models/trainingmodels/start_2.pth","models/trainingmodels/draw_2.pth","models/trainingmodels/discard_2.pth"] 
-    qq = ["models/trainingmodels/startq.pth","models/trainingmodels/drawq.pth","models/trainingmodels/discardq.pth"] 
+    
+
+    aa = ["models/trainingmodels/start_init.pth",
+          "models/trainingmodels/draw_init.pth",
+          "models/trainingmodels/discard_init.pth"]
+    
+    bb = ["models/trainingmodels/start_0.pth", 
+          "models/trainingmodels/draw_0.pth", 
+          "models/trainingmodels/discard_0.pth"]
+    
+    cc = ["models/trainingmodels/start_1.pth",
+          "models/trainingmodels/draw_1.pth",
+          "models/trainingmodels/discard_1.pth"]
+    
+    dd = ["models/trainingmodels/start_2.pth",
+          "models/trainingmodels/draw_2.pth",
+          "models/trainingmodels/discard_2.pth"] 
+    
+    qq = ["models/trainingmodels/startq.pth",
+          "models/trainingmodels/drawq.pth",
+          "models/trainingmodels/discardq.pth"] 
 
     #n_cycles(5  ,15  ,bench3, bb, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= False, manip = False)#, fromsave= True)
     n_cycles(1,1,bb, qq, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)

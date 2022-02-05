@@ -10,27 +10,18 @@ Created on Sat Feb  5 13:44:19 2022
 import numpy as np
 
 import Cards as c
-from Cards import recurse
-import Agents as a
+
 import numpy.random as rand
-import BuildModel as mod
 
 #######
 
-import torch
-from torch import nn
-from torch.utils.data import DataLoader, Dataset
-from torchvision import datasets
-from torchvision.transforms import ToTensor, Lambda, Compose
-from sklearn.utils import shuffle
-import matplotlib.pyplot as plt
 
 
 
 class Game: 
 # this will run a single game, return a result (reward/score), 
 # and a set of moves made throughout the game
-    def __init__(self, qlearner,player2 ):
+    def __init__(self, qlearner,player2, output = True ):
         startplayer = rand.randint(1,2)
         self.knocker = (None,None) #FIRST Player is knocker
         self.winner = None
@@ -38,6 +29,8 @@ class Game:
         self.discarddeck = c.deck(empty = True)
         self.learner = qlearner
         self.player2 = player2
+        self.output= output
+
         # (gamescore,[starting move, [boardstates...], [draw action made:-1 or 1...], [(discard action state, index of discard action made),...])
         # NOTE: the first draw action is associated with the SECOND boardstate if the AI goes first, as the first real draw is a different network
         #self.learnstate = (0, [],[],[])
@@ -71,8 +64,10 @@ class Game:
             disc = self.discard(self.start)#check discard for knock
             if(disc == 1):
                 run = False
+                
+        if(self.output == True):
+            print('#'*82)
             
-        print('#'*82)
         if(res == 1):#if the first player passes, return 1 and give other player turn
             res2 = self.dealphase(self.other)
             
@@ -81,7 +76,9 @@ class Game:
                 if(disc == 1):
                     run = False
                     
-            print('#'*82)
+            if(self.output == True):
+                print('#'*82)
+                
             turns = (self.start, self.other)
             
             # this block determines turn order after
@@ -93,7 +90,10 @@ class Game:
         
             self.playTurn(turns[0])
             res = self.discard(turns[0])
-            print('#'*82)
+            
+            if(self.output == True):
+                print('#'*82)
+                
             # result of discard can be 2 options: 
             # a 0 indicates a normal turn, and will continue normally
             # a 1 passed will indicate a knock, or that cards are all out. 
@@ -103,7 +103,10 @@ class Game:
                 break
             self.playTurn(turns[1])
             res = self.discard(turns[1])
-            print('#'*82)
+            
+            if(self.output == True):
+                print('#'*82)
+                
             if(res == 1):
                 break
         
@@ -144,33 +147,54 @@ class Game:
         if (p1 < p2):
             points = p2 - p1
             if (self.knocker[0] == self.player2):
-                print(f'Undercut by {self.learner.name}!')
+                
+                if(self.output == True):
+                    print(f'Undercut by {self.learner.name}!')
+                    
                 points += 25
             if (p1 == 0):
                 if (self.learner.cardcount() == 11):
-                    print(f"Big Gin by {self.learner.name}!")
+                    
+                    if(self.output == True):
+                        print(f"Big Gin by {self.learner.name}!")
+                        
                     points += 31
                 else:
-                    print(f'{self.learner.name} got gin!')
+                    
+                    if(self.output == True):
+                        print(f'{self.learner.name} got gin!')
+                        
                     points += 25
 
 
         elif (p2 < p1):
             points = -1 * (p1 - p2)
             if (self.knocker[0] == self.learner):
-                print(f'Undercut by {self.player2.name}!')
+                
+                if(self.output == True):
+                    print(f'Undercut by {self.player2.name}!')
+                    
                 points -= 25
             if (p2 == 0):
                 if (self.player2.cardcount() == 11):
-                    print(f"Big Gin by {self.player2.name}!")
+                    
+                    if(self.output == True):
+                        print(f"Big Gin by {self.player2.name}!")
+                        
                     points -= 31
                 else:
-                    print(f'{self.player2.name} got gin!')
+                    
+                    if(self.output == True):
+                        print(f'{self.player2.name} got gin!')
+                        
                     points -= 25
 
         else:  # A push
             if((self.knocker[1] is None) == False):
-                print(f'An undercut by {self.knocker[1].name}')
+                
+                if(self.output == True):
+                    print(f'An undercut by {self.knocker[1].name}')
+                    
                 if(self.knocker[1] == self.learner):
                     points = 25
                 else:
@@ -188,8 +212,11 @@ class Game:
         deadwood = player.deadwood[1]
         deadvals = [c.valuedict[card[1]] for card in deadwood]
         deadvals.sort()
-        print('dead: ', deadvals)
-        print('melds: ', player.melds)
+        
+        if(self.output == True):
+            print('dead: ', deadvals)
+            print('melds: ', player.melds)
+            
         if (len(deadvals) == 0):
             if (player == self.learner):
                 self.knocker = (self.learner, self.player2)
@@ -213,8 +240,11 @@ class Game:
 
     def discard(self, player):
         if (self.discarddeck.cardcount() > 0):
-            print(f'Discard Deck Faceup Card: {self.interpret(self.discarddeck.peek())}')
-        player.printhand()
+            
+            if(self.output == True):
+                print(f'Discard Deck Faceup Card: {self.interpret(self.discarddeck.peek())}')
+                player.printhand()
+                
         while (True):
             # discardindex = (input('Enter the number card you want to discard (0 for first, etc. Type "k" to knock)'))#ADD OPTION TO KNOCK\
             discardindex = player.discardmove(self.discarddeck)
@@ -222,54 +252,66 @@ class Game:
                 discardindex = int(discardindex)
             except:
                 if (discardindex != 'k'):
-                    print('Enter a number! (or k)')
+                    
+                    if(self.output == True):
+                        print('Enter a number! (or k)')
 
             if (isinstance(discardindex, str)):
                 
                 tryknock = self.knock(player)
                 if (tryknock == True):  # knock accepted
-                    print('knock accepted')
-                    print(player.deadwood)
+                    
+                    if(self.output == True):
+                        print('knock accepted')
+                        print(player.deadwood)
+                        
                     player.hand.discardto(player.gethighdeadcard(), self.discarddeck)
-                    print(player.deadwood)
+                    
+
                     return 1
                 
-                print("You can't knock right now!!!!")
+                if(self.output == True):
+                    print("You can't knock right now!!!!")
 
 
             
             elif ((discardindex > (player.cardcount() - 1)) or (discardindex < 0)):
-                print('Not a valid number!')
+                
+                if(self.output == True):
+                    print('Not a valid number!')
+                    
             elif (discardindex >= 0 and (discardindex < player.cardcount())):
                 dcard = player.getcard(discardindex)
-                print(f'discarded {self.interpret(dcard)}')
+                
+                if(self.output == True):
+                    print(f'discarded {self.interpret(dcard)}')
+                    
                 player.hand.discardto(dcard, self.discarddeck)  # TODO: implement this at agent level
                 player.sorthand() 
 
 
-            
-                print(f"Deadwood value: {player.deadwood[0]}")
+                if(self.output == True):
+                    print(f"Deadwood value: {player.deadwood[0]}")
+                    
                 return 0
             
             elif (discardindex == 'quit'):
                 assert (True == False)
-                
-            print('Enter a valid input!')
+            
+            if(self.output == True):    
+                print('Enter a valid input!')
 
 
     def dealphase(self, first):  
         # first will pass the hand of the player BEING DEALT TO. Index is a 0, unless the previous player has passed
-        if (first == self.learner):
-            other = self.player2
 
-        else:
-            other = self.learner
         # other will be the player that is not drawing
         
-     
-        print(f"{first.name}'s Turn Now")
-        print(f'Discard Deck Faceup Card: {self.interpret(self.discarddeck.peek())}')
-        first.printhand()
+        if(self.output == True):
+            print(f"{first.name}'s Turn Now")
+            print(f'Discard Deck Faceup Card: {self.interpret(self.discarddeck.peek())}')
+            first.printhand()
+            
         while (True):
 
             # move = input('Enter "draw" to draw card, or "pass" to pass')
@@ -278,8 +320,8 @@ class Game:
                 first.hand.drawfrom(self.discarddeck)
                 
                 
-                # self.state = 'play'
-                print('playing turns normally now')
+                if(self.output == True):
+                    print('playing turns normally now')
 
                 return 0
                 # initiate turn function for other player
@@ -291,33 +333,34 @@ class Game:
                 assert (False == True)
 
             else:
-                print('enter a valid input!')
+                if(self.output == True):
+                    print('enter a valid input!')
 
 
     def playTurn(self, player):
-        if (player == self.learner):
-            other = self.player2
 
-        else:
-            other = self.learner
-
-
-        print(f"{player.name}'s Turn Now")
-        print(f'Discard Deck Faceup Card: {self.interpret(self.discarddeck.peek())}')
-        player.printhand()
+        
+        if(self.output == True):
+            print(f"{player.name}'s Turn Now")
+            print(f'Discard Deck Faceup Card: {self.interpret(self.discarddeck.peek())}')
+            player.printhand()
 
         while (True):
             # move = input('Enter "1" to draw from face down deck, or "2" to draw from the discard deck')
             move = player.drawmove(self.discarddeck)
             if (move == '1'):
                 try:
-                    top = (self.maindeck.peek())
+                    (self.maindeck.peek())
                 except:
-                    print('Everyone sucks, no more cards')
+                    
+                    if(self.output == True):
+                        print('Everyone sucks, no more cards')
                     
                     return
                 
-                print(f'You drew: {self.interpret(self.maindeck.peek())}')
+                if(self.output == True):
+                    print(f'You drew: {self.interpret(self.maindeck.peek())}')
+                    
                 player.hand.drawfrom(self.maindeck)
                 #self.discard(player)
                 #if ((self.knocker[0] is None) == False):  # gotta put after discard to check for a knock
@@ -336,4 +379,6 @@ class Game:
                 # initiate turn function for other player
 
             else:
-                print('enter a valid move!')
+                
+                if(self.output == True):
+                    print('enter a valid move!')
