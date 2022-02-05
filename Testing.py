@@ -7,6 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import numpy.random as rand
 from scipy.special import softmax
+
 #import torchsummary
 
 mydick = c.deck(empty = True)
