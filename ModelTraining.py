@@ -18,11 +18,11 @@ def unison_shuffled_copies(a, b):
     rand.shuffle(a)
     rand.set_state(rng_state)
     rand.shuffle(b)
-    
+
 #################################
 
 # GLOBALS
-output = False
+output = True 
 
 ########################################################################################################################
 
@@ -130,7 +130,11 @@ def savemodels(models, saveto):
     print('All Models Saved')
 
 
-def TrainCycle(player1, models, opponent, train = (True, True, True), batches = (1,1,1), learning = (0.001, 0.00005, 0.00005), cyclelength = 1 , manip = True):
+def TrainCycle(player1, models, opponent, train = (True, True, True),
+               batches = (1,1,1), learning = (0.001, 0.00005, 0.00005),
+               cyclelength = 1 , manip = True):
+    
+    
     fulldraw_x, fulldraw_y, fulldiscard_x, fulldiscard_y, fullfirst_x, fullfirst_y = [],[],[],[],[],[]
     batchstart, batchdraw, batchdisc = batches
     learnstart, learndraw, learndisc = learning
@@ -313,9 +317,10 @@ if (__name__ == "__main__"):
           "models/trainingmodels/drawq.pth",
           "models/trainingmodels/discardq.pth"] 
 
-    #n_cycles(5  ,15  ,bench3, bb, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= False, manip = False)#, fromsave= True)
-    n_cycles(1,1,bb, qq, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
+    #n_cycles(5  ,15  ,bb, cc, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= False, manip = False)#, fromsave= True)
+    n_cycles(1,1,cc, qq, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
 
 
 
+# TODO: scores list not being updated properly
 #BUG" TODO undercut/final scoring being calculated incorrectly

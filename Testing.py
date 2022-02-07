@@ -84,7 +84,13 @@ unison_shuffled_copies(f, g)
 print(f, g)
 
 #print(softmax(brd2.flatten()))
+s = "abcdddd"
+t = "abcdddde"
 
-
-
-
+s = [char for char in s]
+t = [char for char in t]
+for el in t:
+    if(el not in s):
+        print( el)
+    else:
+        s.remove(el)
