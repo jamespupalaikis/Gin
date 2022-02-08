@@ -148,7 +148,7 @@ if (__name__ == "__main__"):
     print("Saved PyTorch Model State to models/trainingmodels/draw_init.pth")
 
     discardnet =  DiscardNet()
-    torch.save(discardnet.state_dict(), "models/trainingmodels/discard_init.pth")
+    torch.save(discardnet.state_dict(),"models/trainingmodels/discard_init.pth")
     print("Saved PyTorch Model State to models/trainingmodels/discard_init.pth")
 #x = np.ndarray*[[0 for i in range(104)]]
 #x = torch.tensor(np.expand_dims(np.append(np.zeros((52,1)),(np.zeros((52,1))), 0), -1) )

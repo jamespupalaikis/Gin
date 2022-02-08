@@ -110,7 +110,8 @@ class Game:
             if(res == 1):
                 break
         
-        # outside loop, knocker has been established already. Get the winner and go home
+        # outside loop, knocker has been established already. 
+        # Get the winner and go home
         
 
         points = self.getwinner()
@@ -246,7 +247,7 @@ class Game:
                 player.printhand()
                 
         while (True):
-            # discardindex = (input('Enter the number card you want to discard (0 for first, etc. Type "k" to knock)'))#ADD OPTION TO KNOCK\
+
             discardindex = player.discardmove(self.discarddeck)
             try:
                 discardindex = int(discardindex)

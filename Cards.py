@@ -2,12 +2,13 @@ import numpy as np
 import random as rand
 from copy import deepcopy
 
-########################################################################################################################
+##############################################################################
 suitdict = {1: 'C', 2: 'D', 3: 'H', 4: 'S'}
 valuedict = {1:1,2:2,3:3,4:4,5:5, 6:6,7:7, 8:8, 9:9, 10:10, 11:10, 12:10,13:10}
-carddict = {1:'A',2:'2',3:'3',4:'4',5:'5', 6:'6',7:'7', 8:'8', 9:'9', 10:'10', 11:'J', 12:'Q',13:'K'}
+carddict = {1:'A',2:'2',3:'3',4:'4',5:'5', 6:'6',7:'7', 8:'8', 9:'9', 
+            10:'10', 11:'J', 12:'Q',13:'K'}
 
-########################################################################################################################
+##############################################################################
 def flatten(list_of_lists):
     if (len(list_of_lists) == 0):
         return list_of_lists
@@ -16,8 +17,10 @@ def flatten(list_of_lists):
     return list_of_lists[:1] + flatten(list_of_lists[1:])
 
 
-def lessthan(left,
-             right):  # comparison function returning true if left is lower value than right (by suit, then face value)
+def lessthan(left,right):  
+# comparison function returning if left is lower value than right 
+# (by suit, then face value)
+
     if (left[0] == right[0]):
         if(left[1] == right[1]):
             print(left, right)
@@ -67,8 +70,9 @@ def sorthand(hand):
             hand[k] = right[j]
             j += 1
             k += 1
-########################################################################################################################
-def getvalue(cards): #takes a list of cards and returns the sum of their face values
+##############################################################################
+def getvalue(cards): 
+    #takes a list of cards and returns the sum of their face values
     total = 0
     copy = deepcopy(cards)
     while(copy != []):
@@ -76,7 +80,8 @@ def getvalue(cards): #takes a list of cards and returns the sum of their face va
         total += valuedict[new[1]]
     return total
 
-def isrun(cards):#returns whether contained cards contain a run
+def isrun(cards):
+    #returns whether contained cards contain a run
     if(len(cards) < 3):
         return False
     sorthand(cards)
@@ -91,28 +96,29 @@ def isrun(cards):#returns whether contained cards contain a run
 
 
 
-def findrun(card, bin):# finds if a run can be made using the card, and the cards from the bin
-    goods = list(filter(lambda x: x[0] == card[0] , bin))#filter to same suit
-    #print(goods)
-    goods = list(filter(lambda x:  x[1] > card[1] , goods))#filter out smaller cards (they should have been included in prev searches bc hand is sorted
-    #print(goods)
+def findrun(card, bin):
+    # finds if a run can be made using the card, and the cards from the bin
+    goods = list(filter(lambda x: x[0] == card[0] , bin))
+    #filter to same suit
+    goods = list(filter(lambda x:  x[1] > card[1] , goods))
+    #filter out smaller cards 
+    # (they should have been included in prev searches bc hand is sorted)
     while(goods != []):
         if(isrun([card] + goods)):
             runmade = [card] + goods
-            #print('runfind success!: ', f"scard: {card}, sbin {bin}, rmade; {runmade}, rbin: {list(filter(lambda x: x not in runmade, bin ))}")
             return (runmade, list(filter(lambda x: x not in runmade, bin )))
         goods = goods[:-1]
 
     ass = [card] + bin
     sorthand(ass)
-    #print('runfind failed:', ([], ass))
     return(( [] , ass))
 
 
 
 
 
-def findset(card, bin):#same but for sets, return ([set created], [remaining bin])
+def findset(card, bin):
+    #same but for sets, return ([set created], [remaining bin])
     goods = list(filter(lambda x: x[1] == card[1] , bin))
     bin2 = list(filter(lambda x: x not in goods, bin))
     if(len(goods) >= 2):
@@ -132,7 +138,8 @@ def ismeld(bin):
     return False
 
 
-def recurse(bin, melds = [], bestscore = 1000, bestgroup = [[],[]] ,index = 0):#recurse() gives (deadwoodvalue, [[melds], [deadwood']])
+def recurse(bin, melds = [], bestscore = 1000, bestgroup = [[],[]] ,index = 0):
+    #recurse() gives (deadwoodvalue, [[melds], [deadwood']])
     #print("STARTING!", f"BIN IS {bin}")
     if ((ismeld(bin) == False) or (index >= len(bin))): #(index >= len(bin)):
 
@@ -157,17 +164,16 @@ def recurse(bin, melds = [], bestscore = 1000, bestgroup = [[],[]] ,index = 0):#
         group1 = recurse( bin, melds, bestscore, bestgroup, index + 1)
         #print(1, group1)
     else:
-        group1 = recurse( newbin,melds + [newmeld], bestscore, bestgroup, 0)#index)
+        group1 = recurse( newbin,melds + [newmeld], bestscore, bestgroup, 0)
         if(group1 is None):
-            #print('1flag', newbin, melds + [newmeld])
+           
             pass
 
     if newmeld2 == []:
         group2 = recurse( bin, melds,bestscore, bestgroup, index + 1)
     else:
-        group2 = recurse( newbin2,melds + [newmeld2], bestscore, bestgroup, 0)#index)
+        group2 = recurse( newbin2,melds + [newmeld2], bestscore, bestgroup, 0)
         if (group2 is None):
-            #print('2flag', newbin2, melds + [newmeld2])
             pass
     score1, grouped1 = group1
     score2, grouped2 = group2
@@ -182,7 +188,7 @@ def meldeval(hand):
     flat = flatten(melds)
     deadwood = list(filter(lambda x:x not in flat, hand))
     return melds, deadwood
-########################################################################################################################
+#############################################################################
 
 class deck:
     def __init__(self, shuffled = True, empty = False):
@@ -220,7 +226,10 @@ class deck:
         self.deck = [card] + self.deck
         #print('card added')
 
-    def array(self, top = False):#return an 52 len array of 1 for the cards that are in the deck minus the top card if top = false (for backend use only)
+    def array(self, top = False):
+        #return an 52 len array of 1 for the cards that are in the deck minus 
+        # the top card if top = false (for backend use only)
+        
         arr = np.zeros((4,13))
         for card in self.deck[1:]:
             arr[card[0] - 1][card[1] -1] = 1
@@ -237,9 +246,7 @@ class deck:
 class hand:
     def __init__(self):
         self.cards = []
-        #while(len(self.cards) != 10):
-        #    self.cards.append(deck.deal())
-        #assert(len(self.cards) == 10)
+
 
     def __repr__(self):
         rep = 'Hand: '
@@ -249,7 +256,8 @@ class hand:
         return rep[:-2]
 
     def starthand(self, deck):
-        self.cards = [] #clear current hand
+        self.cards = [] 
+        #clear current hand
         while (len(self.cards) != 10):
             self.cards.append(deck.deal())
         assert (len(self.cards) == 10)
@@ -258,8 +266,8 @@ class hand:
     def drawfrom(self, deck):
         self.cards.append(deck.deal())
 
-    def discardto(self,card,deck):#takes a card index (from 0) and discards it into specified deck
-        #mycard = self.cards.pop(card)
+    def discardto(self,card,deck):
+        #takes a card index (from 0) and discards it into specified deck
         self.cards = list(filter(lambda x: x != card,self.cards))
         deck.add(card)
 
@@ -288,7 +296,8 @@ class hand:
                 return True
         return False
 
-    def translatearray(self, arrayindex): #translates a 0-51 array index to a card value
+    def translatearray(self, arrayindex): 
+        #translates a 0-51 array index to a card value
         suit = arrayindex//13 + 1
         face = arrayindex%13 + 1
         return (suit, face)
@@ -297,6 +306,6 @@ class hand:
         self.cards.append(card)
 
 
-########################################################################################################################
+##############################################################################
 
 

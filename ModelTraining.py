@@ -1,17 +1,21 @@
-#This will be an (eventually) headless implementation of PlayGame that plays games between a NN Qlearning AI and a given computer adversary
-#It will allow for training between each game based on a recorded game log of  moves made.
+#This program handles the cycle of running a batch of games, saving the 
+# agent turn lists after each game, shuffling full batches training data, 
+#and then training the networks. Gameplay.py has a playgame_trainreturn
+#function that will play a game and return the score
+
 import numpy as np
-import Agents as a
 import numpy.random as rand
+
+import Agents as a
 import BuildModel as mod
 from Gameplay import Game
 
-#######
+
 import torch
 from torch.utils.data import DataLoader, Dataset
 
 
-#################################
+###############################################################################
 
 def unison_shuffled_copies(a, b):
     rng_state = rand.get_state()
@@ -23,18 +27,22 @@ def unison_shuffled_copies(a, b):
 
 # GLOBALS
 output = True
-########################################################################################################################
+###############################################################################
 
 
 
 
-def manipfirst(obj, points):#takes the first move training object(given its first element is True) and puts it into trainable form
+def manipfirst(obj, points):
+    #takes the first move training object(given its first element is True) 
+    # and puts it into trainable form
     assert(obj[0] == True)
     status, state, move = obj
     #ADD PENALTY HERE
     return state, points*move/129
 
-def manipdraw(obj, points,manip , turnpenalty = 0.965): #takes the first 2 elements of the returned data(the draw elements) and puts it into trainable form
+def manipdraw(obj, points,manip , turnpenalty = 0.965): 
+    #takes the first 2 elements of the returned data(the draw elements) 
+    # and puts it into trainable form
     state, move = obj
     assert(len(state) == len(move))
     state.reverse()
@@ -54,7 +62,9 @@ def manipdraw(obj, points,manip , turnpenalty = 0.965): #takes the first 2 eleme
     return state, move
 
 
-def manipdiscard(obj, points, manip, turnpenalty = 0.99): #takes the last 3 elements of the returned data(the discard elements) and puts into trainable form
+def manipdiscard(obj, points, manip, turnpenalty = 0.99): 
+    #takes the last 3 elements of the returned data(the discard elements) 
+    # and puts into trainable form
     state, baseprobs, choiceindex = obj
     assert(len(baseprobs) == len(choiceindex))
     state.reverse()
@@ -63,7 +73,8 @@ def manipdiscard(obj, points, manip, turnpenalty = 0.99): #takes the last 3 elem
     mult =1.0
     for i in range(len(baseprobs)):
         probs = baseprobs[i]
-        overflow = 70 #spread from the max 129 points you want in the label adjustment
+        overflow = 70 
+        #spread from the max 129 points you want in the label adjustment
         val = (points+129)/(258 - 2*overflow)
         val *= mult
         val = max(val, 0)
@@ -133,8 +144,8 @@ def TrainCycle(player1, models, opponent, train = (True, True, True),
                batches = (1,1,1), learning = (0.001, 0.00005, 0.00005),
                cyclelength = 1 , manip = True):
     
-    
-    fulldraw_x, fulldraw_y, fulldiscard_x, fulldiscard_y, fullfirst_x, fullfirst_y = [],[],[],[],[],[]
+    l = ([],[],[],[],[],[])
+    fulldraw_x,fulldraw_y,fulldiscard_x,fulldiscard_y,fullfirst_x,fullfirst_y=l
     batchstart, batchdraw, batchdisc = batches
     learnstart, learndraw, learndisc = learning
     fullpoints = []
@@ -198,14 +209,14 @@ def TrainCycle(player1, models, opponent, train = (True, True, True),
     if(train[0] == True):
         if(runfirst == True):
             startepochs = 10
-            startoptimizer = torch.optim.Adam(startnet.parameters(), lr=learnstart)
+            startoptimizer=torch.optim.Adam(startnet.parameters(),lr=learnstart)
             # loss_fn = torch.nn.CrossEntropyLoss()
             startloss_fn = torch.nn.MSELoss()
             startmodel = startnet
             for t in range(startepochs):
                 print('epoch ', t + 1, ' out of ', startepochs, ' Startnet')
     
-                trainmodel(first_data, startmodel, startloss_fn, startoptimizer)
+                trainmodel(first_data,startmodel,startloss_fn, startoptimizer)
     
                 #(acc, loss) = test(test_dataloader, model, loss_fn)
     print('#' * 25)
@@ -223,7 +234,7 @@ def TrainCycle(player1, models, opponent, train = (True, True, True),
             # (acc, loss) = test(test_dataloader, model, loss_fn)
         
     print('#' * 25)
-#################################################################################################################
+##############################################################################
     if(train[2] == True):
         discepochs = 32
         discoptimizer = torch.optim.Adam(discnet.parameters(), lr=learndisc)
@@ -265,7 +276,11 @@ def n_cycles(cycles, cyclelength , loadfrom, saveto, player1 = a.qlearner,
         print('#*'*60)
         print(' ')
         print(' ')
-        pts.append(TrainCycle(player1, models, opponent, cyclelength=cyclelength, batches = (1,8,8), manip = manip))
+        pts.append(TrainCycle(player1, models, opponent, 
+                              cyclelength=cyclelength, 
+                              batches = (1,8,8), 
+                              manip = manip))
+        
         if((i+1)%interval == 0):
             savemodels(models, backup)
     savemodels(models, saveto)
@@ -284,8 +299,10 @@ if (__name__ == "__main__"):
 
     bench1_1 = ["models/trainingmodels/start_b1.pth",
                 "models/trainingmodels/draw_b1.pth",
-                "models/trainingmodels/discard_b1.pth"]#draw network slightly stabilized
-    #strong, stable-ish, needs more high-epoch training. May be getting interference from discard deck, may want to work that into rewards
+                "models/trainingmodels/discard_b1.pth"]
+    # draw network slightly stabilized
+    # strong, stable-ish, needs more high-epoch training. 
+    # May be getting interference from discard deck, may want to work that into rewards
     bench2 = ["models/trainingmodels/start_b2.pth",
               "models/trainingmodels/draw_b2.pth",
               "models/trainingmodels/discard_b2.pth"]

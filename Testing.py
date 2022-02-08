@@ -84,4 +84,4 @@ print(f, g)
 
 # print(softmax(brd2.flatten()))
 
-5//10
+
