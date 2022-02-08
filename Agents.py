@@ -313,7 +313,7 @@ class qlearner(agent):
         self.turns[2].append(brd)
         input = torch.tensor(brd).float().unsqueeze(0)
         probs = self.discardnet(input).tolist()[0]#add this to log
-        print('probs', np.array(probs).reshape(4,13))
+        #print('probs', np.array(probs).reshape(4,13))
         self.turns[3].append(probs)
         enum = list(enumerate(probs))
         enum.sort(key = lambda x: x[1], reverse=True)
@@ -547,7 +547,7 @@ class forcetrainer(agent):#takes on decision tree based behaviour, logs moves, a
         self.turns[2].append(brd)
 
 
-        print('probs', probs)
+        #print('probs', probs)
         self.turns[3].append(probs)
         enum = list(enumerate(probs))
         enum.sort(key = lambda x: x[1], reverse=True)
