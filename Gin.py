@@ -2,6 +2,7 @@
 # Barebones timer, mouse, and keyboard events
 import Cards as c
 from tkinter import *
+import numpy.random as rand
 
 ####################################
 # customize these functions
@@ -9,6 +10,9 @@ from tkinter import *
 
 def init(data):
     # load data.xyz as appropriate
+    data.ass = 0
+    data.s, data.v = rand.randint(1,5),rand.randint(1,14)
+    data.state = 'menu'
     
     pass
 
@@ -40,34 +44,42 @@ def drawsuit(canvas,suit,x,y):
 
 
 
-
 ##############################################################################
 def drawCard(canvas, suit, value, x,y):
     #card size will be 70*120, centered at x,y
     #as usual suit 1-4, value 1-13
-    canvas.create_rectangle(x-40, y-60, x+40, y + 60, width = 2)
+    canvas.create_rectangle(x-40, y-60, x+40, y + 60, width = 2, fill = 'white')
     if(suit == 0 and value == 0):
     #this will represent a card back instead (don't feel like writing a new fn)
-        canvas.create_rectangle(x-35, y-55, x+35, y + 55, width = 8, outline = 'red', fill = 'light blue')
-        canvas.create_text(x,y,text = 'fuck you fuck you', angle = 45)
+        canvas.create_rectangle(x-35, y-55, x+35, y + 55, width = 8, outline = 'red', fill = 'light green')
+        canvas.create_oval(x-31,y-31,x+31,y+31, fill = 'dark green', outline = 'green')
+        canvas.create_text(x,y,text = '$')
+        canvas.create_text(x,y,text = 'fuck you fuck you', angle = 55)
+        
+        
     
     else:
         drawsuit(canvas, suit, x,y)
         canvas.create_text(x - 30, y - 50, text = c.carddict[value])
         canvas.create_text(x + 30, y + 50, text = c.carddict[value])
     
-
-
-
-
-
-
-
-
 ##############################################################################
+def cardClicker(x,y):
+    # Interpret clicking on cards in hand for discard
+    
+    if(y <655 and y > 545 ):
+        zone = x // 105
+        if(zone > 10):
+            return -1
+        return zone
+    
+    
+    return -1
+############################################################################
 
 def mousePressed(event, data):
-    # use event.x and event.y
+    data.ass = cardClicker(event.x - 52, event.y)
+    data.state = 'board'
     pass
 
 def keyPressed(event, data):
@@ -78,12 +90,25 @@ def timerFired(data):
     pass
 
 def redrawAll(canvas, data):
+    canvas.create_rectangle(0,0,1300,800,fill = 'light blue')
     
-    
-    for i in range(1,12):
-        drawCard(canvas, i%4 + 1,i,i*105, 600)
-    drawCard(canvas, 0,0, 400, 400)
-    pass
+    if(data.state != 'menu'):
+        for i in range(1,12):
+            # my hand
+            drawCard(canvas, i%4 + 1,i,i*105, 600)
+            
+        for i in range(1,12):
+            # their hand 
+            drawCard(canvas, 0,0,i*105, 100)
+        
+        # faceup pile
+        drawCard(canvas,data.s, data.v , 400, 400)
+        
+        #facedown pile
+        drawCard(canvas, 0,0,800,400)
+        
+        #logger
+        canvas.create_text(200,200,text=data.ass)
 
 
 ##############
@@ -114,7 +139,7 @@ def run(width=300, height=300):
     data = Struct()
     data.width = width
     data.height = height
-    data.timerDelay = 100 # milliseconds
+    data.timerDelay = 400 # milliseconds
     init(data)
     # create the root and the canvas
     root = Tk()
