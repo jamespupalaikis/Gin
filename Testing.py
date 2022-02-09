@@ -84,4 +84,5 @@ print(f, g)
 
 # print(softmax(brd2.flatten()))
 
-
+for i in range(1,12):
+    print(i%4 + 1)
