@@ -11,8 +11,15 @@ import numpy.random as rand
 def init(data):
     # load data.xyz as appropriate
     data.ass = 0
+    
     data.s, data.v = rand.randint(1,5),rand.randint(1,14)
-    data.state = 'menu'
+    
+    data.disp = 'menu'
+    # what to display
+    
+    data.log = '' 
+    # display the last turn made
+    
     
     pass
 
@@ -75,11 +82,21 @@ def cardClicker(x,y):
     
     
     return -1
+
+###############DRAWING########################################################
+def drawMenu(canvas, data):
+    canvas.create_rectangle()
+    canvas.create_text(data.width//2, data.height//2, text = 'Playe')
+    
+
+
+
+
 ############################################################################
 
 def mousePressed(event, data):
     data.ass = cardClicker(event.x - 52, event.y)
-    data.state = 'board'
+    data.disp = 'board'
     pass
 
 def keyPressed(event, data):
@@ -92,7 +109,7 @@ def timerFired(data):
 def redrawAll(canvas, data):
     canvas.create_rectangle(0,0,1300,800,fill = 'light blue')
     
-    if(data.state != 'menu'):
+    if(data.disp != 'menu'):
         for i in range(1,12):
             # my hand
             drawCard(canvas, i%4 + 1,i,i*105, 600)
@@ -109,7 +126,8 @@ def redrawAll(canvas, data):
         
         #logger
         canvas.create_text(200,200,text=data.ass)
-
+        
+        canvas.create_text()
 
 ##############
 # use the run function as-is
