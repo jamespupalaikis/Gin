@@ -20,6 +20,8 @@ def init(data):
     data.log = '' 
     # display the last turn made
     
+    data.cardmenulist = [[rand.randint(1,5), rand.randint(1,14), rand.randint(5,22), rand.randint(100,1200), 0] ] 
+    # cards falling in the menu
     
     pass
 
@@ -60,8 +62,12 @@ def drawCard(canvas, suit, value, x,y):
     #this will represent a card back instead (don't feel like writing a new fn)
         canvas.create_rectangle(x-35, y-55, x+35, y + 55, width = 8, outline = 'red', fill = 'light green')
         canvas.create_oval(x-31,y-31,x+31,y+31, fill = 'dark green', outline = 'green')
-        canvas.create_text(x,y,text = '$')
-        canvas.create_text(x,y,text = 'fuck you fuck you', angle = 55)
+        canvas.create_text(x,y,text = '$', font = 'arial 30', fill = 'yellow')
+        canvas.create_text(x - 20, y - 40, text = '$', font = 'arial 15', fill = 'yellow')
+        canvas.create_text(x + 20, y + 40, text = '$', font = 'arial 15', fill = 'yellow')
+        canvas.create_text(x + 20, y - 40, text = '$', font = 'arial 15', fill = 'yellow')
+        canvas.create_text(x - 20, y + 40, text = '$', font = 'arial 15', fill = 'yellow')
+        #canvas.create_text(x,y,text = 'fuck you fuck you', angle = 55)
         
         
     
@@ -85,18 +91,47 @@ def cardClicker(x,y):
 
 ###############DRAWING########################################################
 def drawMenu(canvas, data):
-    canvas.create_rectangle()
-    canvas.create_text(data.width//2, data.height//2, text = 'Playe')
+    #canvas.create_rectangle()
+    for card in data.cardmenulist:
+        drawCard(canvas, card[0], card[1], card[3], card[4])
+    
+    canvas.create_rectangle(data.width//2 - 190, data.height//2 - 60, data.width//2 + 190, data.height//2 + 60, fill = 'yellow')
+    canvas.create_text(data.width//2, data.height//2 - 220, text = 'Gin Rummy',font="Arial 80 bold", fill = 'green')
+    canvas.create_text(data.width//2, data.height//2 - 120, text = 'By James Pupalaikis',font="Arial 33 bold", fill = 'blue')
+    canvas.create_text(data.width//2, data.height//2, text = 'Play Now',font="Arial 55 bold", fill = 'red')
     
 
-
-
+def drawBoard(canvas,data):
+    for i in range(1,12):
+        # my hand
+        drawCard(canvas, i%4 + 1,i,i*105, 600)
+        
+    for i in range(1,12):
+        # their hand 
+        drawCard(canvas, 0,0,i*105, 100)
+    
+    # faceup pile
+    drawCard(canvas,data.s, data.v , 400, 400)
+    
+    #facedown pile
+    drawCard(canvas, 0,0,800,400)
+    
+    #logger
+    canvas.create_text(200,200,text=data.ass)
+    
+    #last turn
+    canvas.create_text(1000, 300, text = 'Last Turn: ', font = 'Arial 21 bold')
 
 ############################################################################
 
 def mousePressed(event, data):
+    if(data.disp == 'menu'):
+        if(event.x >data.width//2 - 190 and event.x <data.width//2 + 190 ):
+            if(event.y >data.height//2 - 60 and event.y <data.height//2 + 60):
+                data.disp = 'board'
     data.ass = cardClicker(event.x - 52, event.y)
-    data.disp = 'board'
+    
+    
     pass
 
 def keyPressed(event, data):
@@ -104,30 +139,25 @@ def keyPressed(event, data):
     pass
 
 def timerFired(data):
+    if(data.disp == 'menu'):
+        draw = rand.randint(10)
+        if (draw == 2):
+            #items will take form [suit, value, speed, xloc, yloc]
+            data.cardmenulist.append([rand.randint(1,5), rand.randint(1,14), rand.randint(5,22), rand.randint(100,1200), 0])
+        for carditem in data.cardmenulist:
+            carditem[4]+= carditem[2]
+            if(carditem[4] >= 1500):
+                data.cardmenulist.remove(carditem)
+            
+            
     pass
 
 def redrawAll(canvas, data):
     canvas.create_rectangle(0,0,1300,800,fill = 'light blue')
-    
+    if(data.disp == 'menu'):
+        drawMenu(canvas, data)
     if(data.disp != 'menu'):
-        for i in range(1,12):
-            # my hand
-            drawCard(canvas, i%4 + 1,i,i*105, 600)
-            
-        for i in range(1,12):
-            # their hand 
-            drawCard(canvas, 0,0,i*105, 100)
-        
-        # faceup pile
-        drawCard(canvas,data.s, data.v , 400, 400)
-        
-        #facedown pile
-        drawCard(canvas, 0,0,800,400)
-        
-        #logger
-        canvas.create_text(200,200,text=data.ass)
-        
-        canvas.create_text()
+        drawBoard(canvas, data)
 
 ##############
 # use the run function as-is
@@ -157,7 +187,7 @@ def run(width=300, height=300):
     data = Struct()
     data.width = width
     data.height = height
-    data.timerDelay = 400 # milliseconds
+    data.timerDelay = 100 # milliseconds
     init(data)
     # create the root and the canvas
     root = Tk()
