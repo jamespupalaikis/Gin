@@ -121,6 +121,36 @@ class textplayer(agent):
         move = input('Enter "1" to draw from face down deck, or "2" to draw from the discard deck')
         return move
 
+#####################################################################
+###TODO: Interface with the tkinter event system: move to the Gin.py file? 
+
+
+
+class human(agent):
+    def __init__(self, name = 'You' ):
+        agent.__init__(self, name)
+        
+    def __repr__(self):
+        return f'Human Player {self.name}'
+
+
+    def initialmove(self, discarddeck): 
+        #the initial move of the game; options are "draw" or pass
+        move = input('Enter "draw" to draw card, or "pass" to pass')
+        return move
+
+    def discardmove(self,discarddeck):
+        move = (input('Enter the number card you want to discard (0 for first, etc. Type "k" to knock)'))
+        return move
+
+    def drawmove(self, discarddeck):
+        move = input('Enter "1" to draw from face down deck, or "2" to draw from the discard deck')
+        return move
+
+
+
+
+
 
 ########################################################################3
 

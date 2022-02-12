@@ -4,6 +4,10 @@ import Cards as c
 from tkinter import *
 import numpy.random as rand
 
+
+import Gameplay as game
+
+import Agents as agents
 ####################################
 # customize these functions
 ####################################
@@ -22,6 +26,11 @@ def init(data):
     
     data.cardmenulist = [[rand.randint(1,5), rand.randint(1,14), rand.randint(5,22), rand.randint(100,1200), 0] ] 
     # cards falling in the menu
+    
+    bench3 = ["models/trainingmodels/start_b3.pth",
+              "models/trainingmodels/draw_b3.pth",
+              "models/trainingmodels/discard_b3.pth"]
+    data.models = bench3
     
     pass
 
@@ -102,9 +111,11 @@ def drawMenu(canvas, data):
     
 
 def drawBoard(canvas,data):
-    for i in range(1,12):
+    myhand = data.players[0].gethand()
+    for i in range(len(myhand)):
         # my hand
-        drawCard(canvas, i%4 + 1,i,i*105, 600)
+        card = myhand[i]
+        drawCard(canvas, card[0],card[1],(i+1)*105, 600)
         
     for i in range(1,12):
         # their hand 
@@ -123,12 +134,29 @@ def drawBoard(canvas,data):
     canvas.create_text(1000, 300, text = 'Last Turn: ', font = 'Arial 21 bold')
 
 ############################################################################
+# MOUSE FUNCTIONS
+def mouseMenu(event, data):
+    print('a')
+    if(event.x >data.width//2 - 190 and event.x <data.width//2 + 190 ):
+        if(event.y >data.height//2 - 60 and event.y <data.height//2 + 60):
+            #########_Start a game_##########
+            #TODO: make agent that will just take a move from
+            data.players = [agents.human(), agents.qlearner(data.models)]
+            
+            data.game = game.Game(data.players[0], data.players[1])
+            print('ass')
+            
+            
+            data.disp = 'board'
 
+
+
+
+############################################################################
 def mousePressed(event, data):
     if(data.disp == 'menu'):
-        if(event.x >data.width//2 - 190 and event.x <data.width//2 + 190 ):
-            if(event.y >data.height//2 - 60 and event.y <data.height//2 + 60):
-                data.disp = 'board'
+        mouseMenu(event, data)
+            
     data.ass = cardClicker(event.x - 52, event.y)
     
     
