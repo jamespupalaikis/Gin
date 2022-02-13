@@ -151,10 +151,14 @@ class human(agent):
 
     def discardmove(self,event):
         #move = (input('Enter the number card you want to discard (0 for first, etc. Type "k" to knock)'))
+        
         if(event in range(11)):
             move = str(event)
         elif(event == 'k'):
             move = 'k'
+        if(self.hold != []):
+            self.hand.addto(self.hold.pop())
+            self.hold = []
         
         return move
 

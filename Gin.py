@@ -8,9 +8,21 @@ import torch
 import Gameplay as game
 
 import Agents as agents
+
+from time import sleep
 ####################################
 # customize these functions
 ####################################
+#TODO
+#TODO
+#TODO
+#discard index being shifted improperly
+# need to implement turn log
+# need to implement knock button
+# need to implement "show opponent cards"
+# need to fix the sleep timer so that it sleeps while the proper turn instructions are shown
+
+########################
 
 def init(data):
     # load data.xyz as appropriate
@@ -182,7 +194,6 @@ def mouseMenu(event, data):
     if(event.x >data.width//2 - 190 and event.x <data.width//2 + 190 ):
         if(event.y >data.height//2 - 60 and event.y <data.height//2 + 60):
             #########_Start a game_##########
-            #TODO: make agent that will just take a move from
             data.players = [agents.human(), agents.qlearner(data.models)]
             
             data.game = game.Game(data.players[0], data.players[1], output = 'False')
@@ -251,14 +262,14 @@ def discardCheck(event, data):
     zone = cardClicker(x,y)
     if(zone != -1):
         data.game.discard(data.players[0], zone)
-        data.mode = 'p2draw' #TODO: implement other play move here
-        # create function: otherdraw to run draw and discard
+        data.mode = 'p2draw' 
         otherDraw(data)
         
 ####OTher Player Functions#################################
 def otherStart(data):
     move = data.game.dealphase(data.players[1])
     if(move == 0): # draw
+        sleep(2)
         discmove = data.game.discard(data.players[1]) 
         if(discmove == 1):
             win( data)
@@ -275,6 +286,7 @@ def otherStart(data):
         
 def otherDraw(data):
     data.game.playTurn(data.players[1])
+    sleep(2)
     discmove = data.game.discard(data.players[1])
     if(discmove == 1):
         win(data)
