@@ -28,6 +28,9 @@ class agent:
 
     def dealhand(self, deck):  # fills your hand from deck
         self.hand.starthand(deck)
+    
+    def identify(self):#is this a real human?
+        return False
 
     def updatemelds(self, cards = None):#updates the meld and deadwood info
         if(cards is None):
@@ -132,19 +135,36 @@ class human(agent):
         
     def __repr__(self):
         return f'Human Player {self.name}'
+    
+    def identify(self):
+        return True
 
-
-    def initialmove(self, discarddeck): 
+    def initialmove(self, event): 
         #the initial move of the game; options are "draw" or pass
-        move = input('Enter "draw" to draw card, or "pass" to pass')
+        if(event == 1):
+            move = 'draw'
+        
+        if(event == 2):
+            move = 'pass'
+            
         return move
 
-    def discardmove(self,discarddeck):
-        move = (input('Enter the number card you want to discard (0 for first, etc. Type "k" to knock)'))
+    def discardmove(self,event):
+        #move = (input('Enter the number card you want to discard (0 for first, etc. Type "k" to knock)'))
+        if(event in range(11)):
+            move = str(event)
+        elif(event == 'k'):
+            move = 'k'
+        
         return move
 
-    def drawmove(self, discarddeck):
-        move = input('Enter "1" to draw from face down deck, or "2" to draw from the discard deck')
+    def drawmove(self, event):
+        # = input('Enter "1" to draw from face down deck, or "2" to draw from the discard deck')
+        if(event == 1):
+            move = '2'
+        if(event == 2):
+            move = '1'
+            
         return move
 
 

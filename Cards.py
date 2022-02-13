@@ -3,9 +3,9 @@ import random as rand
 from copy import deepcopy
 
 ##############################################################################
-suitdict = {1: 'C', 2: 'D', 3: 'H', 4: 'S'}
+suitdict = {0: 'Null', 1: 'C', 2: 'D', 3: 'H', 4: 'S'}
 valuedict = {1:1,2:2,3:3,4:4,5:5, 6:6,7:7, 8:8, 9:9, 10:10, 11:10, 12:10,13:10}
-carddict = {1:'A',2:'2',3:'3',4:'4',5:'5', 6:'6',7:'7', 8:'8', 9:'9', 
+carddict = {0: 'Null',1:'A',2:'2',3:'3',4:'4',5:'5', 6:'6',7:'7', 8:'8', 9:'9', 
             10:'10', 11:'J', 12:'Q',13:'K'}
 
 ##############################################################################
@@ -218,8 +218,11 @@ class deck:
         return top
 
     def peek(self):
-        assert((self.deck) != [])
-        top = self.deck[0]
+        #assert((self.deck) != [])
+        if((self.deck) != []):
+            top = self.deck[0]
+        else:
+            top = (0,0)
         return top
 
     def add(self, card):#add to the top of the deck

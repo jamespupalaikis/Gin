@@ -239,7 +239,7 @@ class Game:
         return False
 
 
-    def discard(self, player):
+    def discard(self, player, event = None):
         if (self.discarddeck.cardcount() > 0):
             
             if(self.output == True):
@@ -247,8 +247,11 @@ class Game:
                 player.printhand()
                 
         while (True):
-
-            discardindex = player.discardmove(self.discarddeck)
+            if(player.identify() == True): # TODO: build safeguards for legal moves
+                discardindex = player.discardmove( event)
+            else:                
+                discardindex = player.discardmove(self.discarddeck)
+                
             try:
                 discardindex = int(discardindex)
             except:
@@ -303,7 +306,7 @@ class Game:
                 print('Enter a valid input!')
 
 
-    def dealphase(self, first):  
+    def dealphase(self, first, event = None):  
         # first will pass the hand of the player BEING DEALT TO. Index is a 0, unless the previous player has passed
 
         # other will be the player that is not drawing
@@ -316,7 +319,12 @@ class Game:
         while (True):
 
             # move = input('Enter "draw" to draw card, or "pass" to pass')
-            move = first.initialmove(self.discarddeck)
+            if(first.identify() == True):
+                move = first.initialmove(event)
+            
+            else:
+                move = first.initialmove(self.discarddeck)
+                
             if (move == 'draw'):
                 first.hand.drawfrom(self.discarddeck)
                 
@@ -338,17 +346,22 @@ class Game:
                     print('enter a valid input!')
 
 
-    def playTurn(self, player):
+    def playTurn(self, player, event = None):
 
         
         if(self.output == True):
             print(f"{player.name}'s Turn Now")
             print(f'Discard Deck Faceup Card: {self.interpret(self.discarddeck.peek())}')
             player.printhand()
-
+        
+        
         while (True):
             # move = input('Enter "1" to draw from face down deck, or "2" to draw from the discard deck')
-            move = player.drawmove(self.discarddeck)
+            if(player.identify() == True): # TODO: make sure to build safeguards to make sure a legal move is passed
+                move = player.drawmove(event)
+            
+            else:
+                move = player.drawmove(self.discarddeck)
             if (move == '1'):
                 try:
                     (self.maindeck.peek())

@@ -32,6 +32,8 @@ def init(data):
               "models/trainingmodels/discard_b3.pth"]
     data.models = bench3
     
+    data.mode = None
+    
     pass
 
 ##############################################################################
@@ -117,12 +119,14 @@ def drawBoard(canvas,data):
         card = myhand[i]
         drawCard(canvas, card[0],card[1],(i+1)*105, 600)
         
-    for i in range(1,12):
+    theirhand = data.players[1].gethand()
+    for i in range(len(theirhand)):
         # their hand 
-        drawCard(canvas, 0,0,i*105, 100)
+        drawCard(canvas, 0,0,(i + 1)*105, 100)
     
     # faceup pile
-    drawCard(canvas,data.s, data.v , 400, 400)
+    up = data.game.discarddeck.peek()
+    drawCard(canvas, up[0], up[1] , 400, 400)
     
     #facedown pile
     drawCard(canvas, 0,0,800,400)
@@ -132,6 +136,35 @@ def drawBoard(canvas,data):
     
     #last turn
     canvas.create_text(1000, 300, text = 'Last Turn: ', font = 'Arial 21 bold')
+    
+    
+def drawDirections(canvas, data):
+    # create text for turn instructions
+    if(data.mode == 'p1start'):
+        text = 'Your turn now; Click the faceup card to draw, or facedown deck to pass'
+    
+    elif(data.mode == 'p2start'):
+        text = 'Player 2 is choosing...'
+        
+    elif(data.mode == 'p1draw'):
+        text = 'Click the deck that you want to draw from'
+    
+    elif(data.mode == 'p2draw'):
+        text = 'Player 2 drawing now...'
+    
+    elif(data.mode == 'p1discard'):
+        text = 'Click the card that you want to discard'
+        
+    elif(data.mode == 'p2discard'):
+        text = 'Player 2 discarding now...'
+        
+    elif(data.mode == 'null'):
+        text = 'null flag'
+    
+    else:
+        text = 'You should not be seeing this!'
+        
+    canvas.create_text(50,250, anchor = W, text = text, font = 'Arial 14')
 
 ############################################################################
 # MOUSE FUNCTIONS
@@ -143,22 +176,66 @@ def mouseMenu(event, data):
             #TODO: make agent that will just take a move from
             data.players = [agents.human(), agents.qlearner(data.models)]
             
-            data.game = game.Game(data.players[0], data.players[1])
-            print('ass')
+            data.game = game.Game(data.players[0], data.players[1], output = 'False')
+            print(data.game.start, data.game.start.identify())
+            data.game.discarddeck.add(data.game.maindeck.deal())
             
+            if(data.game.start.identify() == True):
+                # Human player start
+                print('hooman')
+                data.mode = 'p1start'
             
+            elif(data.game.start.identify() == False):
+                 #computer player start
+                 print('not hooman')
+                 data.mode = 'p2start'
+                 
+            else:
+                data.mode = 'null'
+                
+                
             data.disp = 'board'
 
 
+def drawcheck(event, data):
+    #checks mouse move and makes sure agent is only called if within proper bounds
+    #It will execute the move, and set the mode to the proper following state
+    x,y = event.x, event.y
+    if(x > 360 and x < 440):#faceup file
+        if(y > 340 and y < 460):
+            if(data.mode == 'p1start'):
+                data.game.dealphase(data.players[0], 1)
+                data.mode = 'p1discard'
 
-
+            
+            elif(data.mode == 'p1draw'):
+                data.game.playTurn(data.players[0], 1)
+                data.mode = 'p1discard'
+    
+    if(x > 760 and x < 840):#facedown/pass
+        if(y > 340 and y < 460):
+            if(data.mode == 'p1start'):
+                data.game.dealphase(data.players[0], 2)
+                #have global check to see if pass has been made to determin move
+                #FOLLOWING IS TEMPORARY TODO: FIX
+                data.mode = 'p2draw'
+                
+            
+            elif(data.mode == 'p1draw'):
+                data.game.playTurn(data.players[0], 2)
+                data.mode = 'p1discard'
+    
 ############################################################################
 def mousePressed(event, data):
     if(data.disp == 'menu'):
         mouseMenu(event, data)
             
     data.ass = cardClicker(event.x - 52, event.y)
-    
+    if(data.disp == 'board'):
+        if(data.mode == 'p1start' or data.mode == 'p1draw'):
+            print('drawcheck')
+            drawcheck(event, data)
+            print(data.mode)
     
     pass
 
@@ -184,8 +261,10 @@ def redrawAll(canvas, data):
     canvas.create_rectangle(0,0,1300,800,fill = 'light blue')
     if(data.disp == 'menu'):
         drawMenu(canvas, data)
-    if(data.disp != 'menu'):
+    if(data.disp == 'board'):
         drawBoard(canvas, data)
+        drawDirections(canvas, data)
+        
 
 ##############
 # use the run function as-is
