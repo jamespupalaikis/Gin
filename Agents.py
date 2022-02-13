@@ -156,9 +156,9 @@ class human(agent):
             move = str(event)
         elif(event == 'k'):
             move = 'k'
-        if(self.hold != []):
-            self.hand.addto(self.hold.pop())
-            self.hold = []
+        #if(self.hold != []):
+        #    self.hand.addto(self.hold.pop())
+        #    self.hold = []
         
         return move
 

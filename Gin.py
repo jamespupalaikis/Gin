@@ -21,6 +21,13 @@ from time import sleep
 # need to implement knock button
 # need to implement "show opponent cards"
 # need to fix the sleep timer so that it sleeps while the proper turn instructions are shown
+# implement win screen
+
+#AMBITIOUS GOALS: 
+# implement animations (this might be a disaster)
+# implement full games
+# implement difficulty settings
+
 
 ########################
 
@@ -117,7 +124,7 @@ def cardClicker(x,y):
         zone = x // 105
         if(zone > 10):
             return -1
-        return zone
+        return zone 
     
     
     return -1
@@ -136,7 +143,7 @@ def drawMenu(canvas, data):
 
 def drawBoard(canvas,data):
     myhand = data.players[0].gethand()
-    for i in range(len(myhand)):
+    for i in range(len(myhand)): 
         # my hand
         card = myhand[i]
         drawCard(canvas, card[0],card[1],(i+1)*105, 600)
@@ -261,6 +268,8 @@ def discardCheck(event, data):
     x,y = event.x, event.y
     zone = cardClicker(x,y)
     if(zone != -1):
+        print(zone, 'apple ap')
+        print(data.players[0].gethand())
         data.game.discard(data.players[0], zone)
         data.mode = 'p2draw' 
         otherDraw(data)

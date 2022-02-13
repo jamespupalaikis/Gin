@@ -285,8 +285,13 @@ class Game:
                     print('Not a valid number!')
                     
             elif (discardindex >= 0 and (discardindex < player.cardcount())):
+                # proper input
                 dcard = player.getcard(discardindex)
-                
+                print(dcard, 'aaaaaa')
+                if(player.hold != []):
+                    player.hand.addto(player.hold.pop())
+                    player.hold = []
+                    
                 if(self.output == True):
                     print(f'discarded {self.interpret(dcard)}')
                     
