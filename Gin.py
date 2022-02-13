@@ -224,6 +224,13 @@ def drawcheck(event, data):
             elif(data.mode == 'p1draw'):
                 data.game.playTurn(data.players[0], 2)
                 data.mode = 'p1discard'
+                
+def discardCheck(event, data):
+    x,y = event.x, event.y
+    zone = cardClicker(x,y)
+    if(zone != -1):
+        data.game.discard(data.players[0], zone)
+        data.mode = 'p2draw' #TODO: implement other play move here
     
 ############################################################################
 def mousePressed(event, data):
@@ -236,6 +243,8 @@ def mousePressed(event, data):
             print('drawcheck')
             drawcheck(event, data)
             print(data.mode)
+        if(data.mode == 'p1discard'):
+            discardCheck(event, data)
     
     pass
 
