@@ -3,8 +3,8 @@
 import Cards as c
 from tkinter import *
 import numpy.random as rand
-
-
+import BuildModel as mod
+import torch
 import Gameplay as game
 
 import Agents as agents
@@ -27,12 +27,22 @@ def init(data):
     data.cardmenulist = [[rand.randint(1,5), rand.randint(1,14), rand.randint(5,22), rand.randint(100,1200), 0] ] 
     # cards falling in the menu
     
-    bench3 = ["models/trainingmodels/start_b3.pth",
+    loadfrom = ["models/trainingmodels/start_b3.pth",
               "models/trainingmodels/draw_b3.pth",
               "models/trainingmodels/discard_b3.pth"]
-    data.models = bench3
+    
+    startnet = mod.StartNet()
+    startnet.load_state_dict(torch.load(loadfrom[0]))
+    drawnet = mod.DrawNet()
+    drawnet.load_state_dict(torch.load(loadfrom[1]))
+    discardnet = mod.DiscardNet()
+    discardnet.load_state_dict(torch.load(loadfrom[2]))
+    data.models = [startnet, drawnet, discardnet]
+
     
     data.mode = None
+    
+    data.startpass = True #True until a pass is given, then False
     
     pass
 
@@ -169,7 +179,6 @@ def drawDirections(canvas, data):
 ############################################################################
 # MOUSE FUNCTIONS
 def mouseMenu(event, data):
-    print('a')
     if(event.x >data.width//2 - 190 and event.x <data.width//2 + 190 ):
         if(event.y >data.height//2 - 60 and event.y <data.height//2 + 60):
             #########_Start a game_##########
@@ -215,10 +224,22 @@ def drawcheck(event, data):
     if(x > 760 and x < 840):#facedown/pass
         if(y > 340 and y < 460):
             if(data.mode == 'p1start'):
-                data.game.dealphase(data.players[0], 2)
+                dealmove = data.game.dealphase(data.players[0], 2)
                 #have global check to see if pass has been made to determin move
-                #FOLLOWING IS TEMPORARY TODO: FIX
-                data.mode = 'p2draw'
+                #FOLLOWING IS TEMPORARY 
+                #TODO: FIX
+                if(dealmove == 0): # draw
+                    data.mode = 'p1discard'
+                
+                elif(dealmove == 1): # pass
+                    if(data.startpass == True):
+                        data.startpass = False
+                        data.mode = 'p2start'
+                        otherStart( data)
+                    else:
+                        data.mode = 'p2draw'
+                        otherDraw(data)
+                    
                 
             
             elif(data.mode == 'p1draw'):
@@ -231,6 +252,43 @@ def discardCheck(event, data):
     if(zone != -1):
         data.game.discard(data.players[0], zone)
         data.mode = 'p2draw' #TODO: implement other play move here
+        # create function: otherdraw to run draw and discard
+        otherDraw(data)
+        
+####OTher Player Functions#################################
+def otherStart(data):
+    move = data.game.dealphase(data.players[1])
+    if(move == 0): # draw
+        discmove = data.game.discard(data.players[1]) 
+        if(discmove == 1):
+            win( data)
+        else:
+            data.mode = 'p1start'
+    
+    elif(move == 1):# pass
+        if(data.startpass == True):
+            data.startpass = False
+            data.mode = 'p1start'
+        else:
+            data.mode = 'p1draw'
+        
+        
+def otherDraw(data):
+    data.game.playTurn(data.players[1])
+    discmove = data.game.discard(data.players[1])
+    if(discmove == 1):
+        win(data)
+    
+    else:
+        data.mode = 'p1draw'
+###################################################################    
+def win( data):
+    data.mode = 'win'
+    print('asshole')
+    
+    
+    
+    
     
 ############################################################################
 def mousePressed(event, data):
