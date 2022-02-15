@@ -124,6 +124,7 @@ def cardClicker(x,y):
         zone = x // 105
         if(zone > 10):
             return -1
+        print('zone', zone)
         return zone 
     
     
@@ -268,10 +269,11 @@ def discardCheck(event, data):
     x,y = event.x, event.y
     zone = cardClicker(x,y)
     if(zone != -1):
+        data.mode = 'p2draw' 
         print(zone, 'apple ap')
         print(data.players[0].gethand())
         data.game.discard(data.players[0], zone)
-        data.mode = 'p2draw' 
+
         otherDraw(data)
         
 ####OTher Player Functions#################################
@@ -323,9 +325,10 @@ def mousePressed(event, data):
             drawcheck(event, data)
             print(data.mode)
         if(data.mode == 'p1discard'):
+            print('runningdisccheckrn')
             discardCheck(event, data)
     
-    pass
+    
 
 def keyPressed(event, data):
     # use event.char and event.keysym
@@ -366,6 +369,7 @@ def run(width=300, height=300):
 
     def mousePressedWrapper(event, canvas, data):
         mousePressed(event, data)
+        
         redrawAllWrapper(canvas, data)
 
     def keyPressedWrapper(event, canvas, data):

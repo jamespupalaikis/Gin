@@ -259,11 +259,12 @@ class hand:
         return rep[:-2]
 
     def starthand(self, deck):
+        handlen = 10
         self.cards = [] 
         #clear current hand
-        while (len(self.cards) != 10):
+        while (len(self.cards) != handlen):
             self.cards.append(deck.deal())
-        assert (len(self.cards) == 10)
+        assert (len(self.cards) == handlen)
 
 
     def drawfrom(self, deck):

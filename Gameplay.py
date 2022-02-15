@@ -287,7 +287,8 @@ class Game:
             elif (discardindex >= 0 and (discardindex < player.cardcount())):
                 # proper input
                 dcard = player.getcard(discardindex)
-                print(dcard, 'aaaaaa')
+                print(dcard, ' is discarded from:')
+                print(player.gethand(), 'hand')
                 if(player.hold != []):
                     player.hand.addto(player.hold.pop())
                     player.hold = []
