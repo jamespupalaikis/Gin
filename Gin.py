@@ -328,7 +328,7 @@ def mousePressed(event, data):
             print('runningdisccheckrn')
             discardCheck(event, data)
     
-    
+      
 
 def keyPressed(event, data):
     # use event.char and event.keysym
