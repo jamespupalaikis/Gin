@@ -16,7 +16,7 @@ from time import sleep
 #TODO
 #TODO
 #TODO
-#discard index being shifted improperly
+#discard index being shifted improperly -> 2 mouseclicks being entered, sometimes it shifts up +1
 # need to implement turn log
 # need to implement knock button
 # need to implement "show opponent cards"
