@@ -100,6 +100,21 @@ class agent:
         max = 0.0
         cards = []
         
+        
+    def canknock(self):
+        self.updatemelds(self.hand.gethand() + self.hold)
+        deadwood = self.deadwood[1]
+        deadvals = [c.valuedict[card[1]] for card in deadwood]
+        deadvals.sort()
+        
+            
+        if (len(deadvals) == 0):
+            return True
+        elif (len(deadvals) == 1):
+            return True
+        elif (sum(deadvals[:-1]) <= 10):
+            return True
+        return False
 
 
 

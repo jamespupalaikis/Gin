@@ -35,6 +35,8 @@ def init(data):
     # load data.xyz as appropriate
     data.ass = 0
     
+    data.winner = [None, 0]
+    
     data.s, data.v = rand.randint(1,5),rand.randint(1,14)
     
     data.disp = 'menu'
@@ -94,10 +96,10 @@ def drawsuit(canvas,suit,x,y):
 
 
 ##############################################################################
-def drawCard(canvas, suit, value, x,y):
+def drawCard(canvas, suit, value, x,y, outline = 'black'):
     #card size will be 70*120, centered at x,y
     #as usual suit 1-4, value 1-13
-    canvas.create_rectangle(x-40, y-60, x+40, y + 60, width = 2, fill = 'white')
+    canvas.create_rectangle(x-40, y-60, x+40, y + 60, width = 2, fill = 'white', outline = outline)
     if(suit == 0 and value == 0):
     #this will represent a card back instead (don't feel like writing a new fn)
         canvas.create_rectangle(x-35, y-55, x+35, y + 55, width = 8, outline = 'red', fill = 'light green')
@@ -119,8 +121,9 @@ def drawCard(canvas, suit, value, x,y):
 ##############################################################################
 def cardClicker(x,y):
     # Interpret clicking on cards in hand for discard
-    if(x > 300 and x < 350):
-        if(y > 340 and y < 460):
+    zone = -1
+    if(y > 340 and y < 460):
+        if(x > 300 and x < 350):
             zone = 'k'
     else:
         x -= 52
@@ -128,7 +131,7 @@ def cardClicker(x,y):
             zone = x // 105
             if(zone > 10):
                 return -1
-            print('zone', zone, x,y)
+
     return zone 
     
     
@@ -143,7 +146,7 @@ def drawMenu(canvas, data):
     canvas.create_rectangle(data.width//2 - 190, data.height//2 - 60, data.width//2 + 190, data.height//2 + 60, fill = 'yellow')
     canvas.create_text(data.width//2, data.height//2 - 220, text = 'Gin Rummy',font="Arial 80 bold", fill = 'green')
     canvas.create_text(data.width//2, data.height//2 - 120, text = 'By James Pupalaikis',font="Arial 33 bold", fill = 'blue')
-    canvas.create_text(data.width//2, data.height//2, text = 'Play Now',font="Arial 55 bold", fill = 'red')
+    canvas.create_text(data.width//2, data.height//2, text = 'Play Now',font="Arial 55 bold", fill = 'blue')
     
 
 def drawBoard(canvas,data):
@@ -152,6 +155,8 @@ def drawBoard(canvas,data):
         # my hand
         card = myhand[i]
         drawCard(canvas, card[0],card[1],(i+1)*105, 600)
+    for card in data.players[0].hold:
+        drawCard(canvas, card[0], card[1], (10 + 1)*105, 600, 'red')
         
     theirhand = data.players[1].gethand()
     for i in range(len(theirhand)):
@@ -199,10 +204,19 @@ def drawDirections(canvas, data):
     elif(data.mode == 'null'):
         text = 'null flag'
     
+    
+    
     else:
         text = 'You should not be seeing this!'
         
     canvas.create_text(50,250, anchor = W, text = text, font = 'Arial 14')
+    
+def drawWin(canvas, data):
+    for card in data.cardmenulist:
+        drawCard(canvas, card[0], card[1], card[3], card[4])
+    txt = f'{data.winner[0]} is the winner with a score of {data.winner[1]}!!!'
+    canvas.create_text(data.width//2, data.height//2 , text = txt,
+                       font="Arial 33 bold", fill = 'blue')
 
 ############################################################################
 # MOUSE FUNCTIONS
@@ -273,9 +287,18 @@ def drawcheck(event, data):
                 
 def discardCheck(event, data):
     x,y = event.x, event.y
-    print(x,y,'dc')
     zone = cardClicker(x,y)
-    if(zone != -1):
+    if(zone == 'k'):
+        print('tried knocking')
+        check = data.players[0].canknock()
+        print(check)
+        if(check == True):
+            print('knock success')
+            res = data.game.discard(data.players[0], zone)
+            if(res == 1):
+                win(data)
+            
+    elif(zone != -1):
         
         #print(zone, 'apple ap')
         #print(data.players[0].gethand())
@@ -316,7 +339,13 @@ def otherDraw(data):
         data.mode = 'p1draw'
 ###################################################################    
 def win( data):
-    data.mode = 'win'
+    data.disp = 'win'
+    points = data.game.getwinner()
+    if(points > 0):
+        winner = [data.players[0], points]
+    else:
+        winner = [data.players[1], -points]
+    data.winner = winner
     print('asshole')
     
     
@@ -345,7 +374,7 @@ def keyPressed(event, data):
     pass
 
 def timerFired(data):
-    if(data.disp == 'menu'):
+    if(data.disp in ['menu', 'win']):
         draw = rand.randint(10)
         if (draw == 2):
             #items will take form [suit, value, speed, xloc, yloc]
@@ -365,6 +394,8 @@ def redrawAll(canvas, data):
     if(data.disp == 'board'):
         drawBoard(canvas, data)
         drawDirections(canvas, data)
+    if(data.disp == 'win'):
+        drawWin(canvas, data)
         
 
 ##############
