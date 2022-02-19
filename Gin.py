@@ -16,12 +16,11 @@ from time import sleep
 #TODO
 #TODO
 #TODO
-#discard index being shifted improperly -> 2 mouseclicks being entered, sometimes it shifts up +1
 # need to implement turn log
-# need to implement knock button
+# need to prettify knock button
 # need to implement "show opponent cards"
 # need to fix the sleep timer so that it sleeps while the proper turn instructions are shown
-# implement win screen
+# polish win screen/add replay button
 
 #AMBITIOUS GOALS: 
 # implement animations (this might be a disaster)
@@ -36,6 +35,11 @@ def init(data):
     data.ass = 0
     
     data.winner = [None, 0]
+    #stores winner and score
+    
+    data.showall = False
+    #whether to display opponent cards
+    
     
     data.s, data.v = rand.randint(1,5),rand.randint(1,14)
     
@@ -158,11 +162,17 @@ def drawBoard(canvas,data):
     for card in data.players[0].hold:
         drawCard(canvas, card[0], card[1], (10 + 1)*105, 600, 'red')
         
+        
+        
     theirhand = data.players[1].gethand()
     for i in range(len(theirhand)):
         # their hand 
-        drawCard(canvas, 0,0,(i + 1)*105, 100)
-    
+        if(data.showall == False):
+            drawCard(canvas, 0,0,(i + 1)*105, 100)
+        else:
+            card = theirhand[i]
+            drawCard(canvas, card[0],card[1],(i+1)*105, 100)
+            
     # faceup pile
     up = data.game.discarddeck.peek()
     drawCard(canvas, up[0], up[1] , 400, 400)
@@ -180,6 +190,13 @@ def drawBoard(canvas,data):
     canvas.create_text(1000, 300, text = 'Last Turn: ', font = 'Arial 21 bold')
     # canvas.create_text(1000, 400, text = data.log, font = 'Arial 21 bold')
     
+    #checkbutton for show all cards
+    canvas.create_rectangle(50, 200, 75, 225, fill = 'beige')
+    canvas.create_text(80,212, text = 'Show all cards', font = 'arial 14', anchor=W)
+    if(data.showall == True):
+        canvas.create_text(63,212, text = '✓', fill = 'green', font = 'arial 18')
+        
+        
     
 def drawDirections(canvas, data):
     # create text for turn instructions
@@ -209,7 +226,7 @@ def drawDirections(canvas, data):
     else:
         text = 'You should not be seeing this!'
         
-    canvas.create_text(50,250, anchor = W, text = text, font = 'Arial 14')
+    canvas.create_text(50,300, anchor = W, text = text, font = 'Arial 14 bold')
     
 def drawWin(canvas, data):
     for card in data.cardmenulist:
@@ -309,6 +326,15 @@ def discardCheck(event, data):
             data.mode = 'p2draw' 
             otherDraw(data)
         
+        
+        
+def mouseButtons(event, data): #checks/unchecks buttons on main board
+# 50, 200, 75, 225
+    x,y = event.x, event.y
+    if(y > 200 and y < 225):
+        if(x > 50 and x < 75):
+            data.showall = not (data.showall)
+            
 ####OTher Player Functions#################################
 def otherStart(data):
     move = data.game.dealphase(data.players[1])
@@ -359,6 +385,7 @@ def mousePressed(event, data):
             
     #data.ass = cardClicker(event.x - 52, event.y)
     if(data.disp == 'board'):
+        mouseButtons(event, data)
         if(data.mode == 'p1start' or data.mode == 'p1draw'):
             #print('drawcheck')
             drawcheck(event, data)
