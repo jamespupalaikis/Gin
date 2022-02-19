@@ -119,13 +119,17 @@ def drawCard(canvas, suit, value, x,y):
 ##############################################################################
 def cardClicker(x,y):
     # Interpret clicking on cards in hand for discard
-    
-    if(y <655 and y > 545 ):
-        zone = x // 105
-        if(zone > 10):
-            return -1
-        print('zone', zone)
-        return zone 
+    if(x > 300 and x < 350):
+        if(y > 340 and y < 460):
+            zone = 'k'
+    else:
+        x -= 52
+        if(y <655 and y > 545 ):
+            zone = x // 105
+            if(zone > 10):
+                return -1
+            print('zone', zone, x,y)
+    return zone 
     
     
     return -1
@@ -161,11 +165,15 @@ def drawBoard(canvas,data):
     #facedown pile
     drawCard(canvas, 0,0,800,400)
     
+    #Knock Button
+    canvas.create_rectangle(300, 340, 350, 460, fill = 'red')
+    
     #logger
     canvas.create_text(200,200,text=data.ass)
     
     #last turn
     canvas.create_text(1000, 300, text = 'Last Turn: ', font = 'Arial 21 bold')
+    # canvas.create_text(1000, 400, text = data.log, font = 'Arial 21 bold')
     
     
 def drawDirections(canvas, data):
@@ -205,17 +213,15 @@ def mouseMenu(event, data):
             data.players = [agents.human(), agents.qlearner(data.models)]
             
             data.game = game.Game(data.players[0], data.players[1], output = 'False')
-            print(data.game.start, data.game.start.identify())
+            #print(data.game.start, data.game.start.identify())
             data.game.discarddeck.add(data.game.maindeck.deal())
             
             if(data.game.start.identify() == True):
                 # Human player start
-                print('hooman')
                 data.mode = 'p1start'
             
             elif(data.game.start.identify() == False):
                  #computer player start
-                 print('not hooman')
                  data.mode = 'p2start'
                  
             else:
@@ -267,14 +273,18 @@ def drawcheck(event, data):
                 
 def discardCheck(event, data):
     x,y = event.x, event.y
+    print(x,y,'dc')
     zone = cardClicker(x,y)
     if(zone != -1):
-        data.mode = 'p2draw' 
-        print(zone, 'apple ap')
-        print(data.players[0].gethand())
-        data.game.discard(data.players[0], zone)
-
-        otherDraw(data)
+        
+        #print(zone, 'apple ap')
+        #print(data.players[0].gethand())
+        res = data.game.discard(data.players[0], zone)
+        if(res == 1):
+            win(data)
+        else:
+            data.mode = 'p2draw' 
+            otherDraw(data)
         
 ####OTher Player Functions#################################
 def otherStart(data):
@@ -318,14 +328,14 @@ def mousePressed(event, data):
     if(data.disp == 'menu'):
         mouseMenu(event, data)
             
-    data.ass = cardClicker(event.x - 52, event.y)
+    #data.ass = cardClicker(event.x - 52, event.y)
     if(data.disp == 'board'):
         if(data.mode == 'p1start' or data.mode == 'p1draw'):
-            print('drawcheck')
+            #print('drawcheck')
             drawcheck(event, data)
-            print(data.mode)
+            #print(data.mode)
         if(data.mode == 'p1discard'):
-            print('runningdisccheckrn')
+            #print('runningdisccheckrn')
             discardCheck(event, data)
     
        
@@ -368,6 +378,7 @@ def run(width=300, height=300):
         canvas.update()    
 
     def mousePressedWrapper(event, canvas, data):
+        #print('mpwrapper')
         mousePressed(event, data)
         
         redrawAllWrapper(canvas, data)

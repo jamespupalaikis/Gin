@@ -1,5 +1,6 @@
-# this is a sandbox for manual testing
+# this is a sandbox for manual tesf
 
+from heapq import *
 
 from sklearn.utils import shuffle
 import Cards as c
@@ -84,6 +85,14 @@ print(f, g)
 
 # print(softmax(brd2.flatten()))
 
-a = '0123456789'
+heap = []
+heappush(heap, 1)
+heappush(heap, 223)
+heappush(heap, 4)
+heappush(heap, 11)
+heappush(heap, 2)
+heappush(heap, 123)
+heappush(heap, 12)
 
-print(a[5:])
+print(heap)
+print(str('k'))
