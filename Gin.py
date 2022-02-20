@@ -18,9 +18,9 @@ from time import sleep
 #TODO
 # need to implement turn log
 # need to prettify knock button
-# need to implement "show opponent cards"
 # need to fix the sleep timer so that it sleeps while the proper turn instructions are shown
 # polish win screen/add replay button
+# add option to type name at beginning, label the players maybe
 
 #AMBITIOUS GOALS: 
 # implement animations (this might be a disaster)
@@ -182,6 +182,8 @@ def drawBoard(canvas,data):
     
     #Knock Button
     canvas.create_rectangle(300, 340, 350, 460, fill = 'red')
+    canvas.create_rectangle(310, 360,340, 440, fill = 'orange' )
+    canvas.create_text(325, 400, text = 'Knock', angle = 90, font = 'arial 16 bold')
     
     #logger
     canvas.create_text(200,200,text=data.ass)
@@ -194,7 +196,7 @@ def drawBoard(canvas,data):
     canvas.create_rectangle(50, 200, 75, 225, fill = 'beige')
     canvas.create_text(80,212, text = 'Show all cards', font = 'arial 14', anchor=W)
     if(data.showall == True):
-        canvas.create_text(63,212, text = '✓', fill = 'green', font = 'arial 18')
+        canvas.create_text(65,212, text = '✓', fill = 'green', font = 'arial 18')
         
         
     
@@ -383,7 +385,6 @@ def mousePressed(event, data):
     if(data.disp == 'menu'):
         mouseMenu(event, data)
             
-    #data.ass = cardClicker(event.x - 52, event.y)
     if(data.disp == 'board'):
         mouseButtons(event, data)
         if(data.mode == 'p1start' or data.mode == 'p1draw'):

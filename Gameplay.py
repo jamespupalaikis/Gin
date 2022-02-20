@@ -30,7 +30,13 @@ class Game:
         self.learner = qlearner
         self.player2 = player2
         self.output= output
-
+        
+        
+        #####
+        
+        self.log = '' #this will store a text 
+        
+         
         # (gamescore,[starting move, [boardstates...], [draw action made:-1 or 1...], [(discard action state, index of discard action made),...])
         # NOTE: the first draw action is associated with the SECOND boardstate if the AI goes first, as the first real draw is a different network
         #self.learnstate = (0, [],[],[])
