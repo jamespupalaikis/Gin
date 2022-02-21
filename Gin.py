@@ -32,7 +32,7 @@ from time import sleep
 
 def init(data):
     # load data.xyz as appropriate
-    data.ass = 0
+
     
     data.winner = [None, 0]
     #stores winner and score
@@ -186,11 +186,11 @@ def drawBoard(canvas,data):
     canvas.create_text(325, 400, text = 'Knock', angle = 90, font = 'arial 16 bold')
     
     #logger
-    canvas.create_text(200,200,text=data.ass)
+
     
     #last turn
-    canvas.create_text(1000, 300, text = 'Last Turn: ', font = 'Arial 21 bold')
-    # canvas.create_text(1000, 400, text = data.log, font = 'Arial 21 bold')
+    canvas.create_text(1000, 300, text = "opponent's 'Last Turn: ", font = 'Arial 14 bold')
+    canvas.create_text(1000, 400, text = data.log, font = 'Arial 21 bold')
     
     #checkbutton for show all cards
     canvas.create_rectangle(50, 200, 75, 225, fill = 'beige')
@@ -339,14 +339,16 @@ def mouseButtons(event, data): #checks/unchecks buttons on main board
             
 ####OTher Player Functions#################################
 def otherStart(data):
+    sleep(5)
     move = data.game.dealphase(data.players[1])
     if(move == 0): # draw
-        sleep(2)
+        sleep(5)
         discmove = data.game.discard(data.players[1]) 
         if(discmove == 1):
             win( data)
         else:
             data.mode = 'p1start'
+        data.log = data.game.log
     
     elif(move == 1):# pass
         if(data.startpass == True):
@@ -365,6 +367,7 @@ def otherDraw(data):
     
     else:
         data.mode = 'p1draw'
+    data.log = data.game.log
 ###################################################################    
 def win( data):
     data.disp = 'win'

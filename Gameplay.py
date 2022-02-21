@@ -34,7 +34,7 @@ class Game:
         
         #####
         
-        self.log = '' #this will store a text 
+        self.log = [-1, (0,0)] #this will store the last [draw decision made, card discarded        sleep(2)]
         
          
         # (gamescore,[starting move, [boardstates...], [draw action made:-1 or 1...], [(discard action state, index of discard action made),...])
@@ -293,6 +293,7 @@ class Game:
             elif (discardindex >= 0 and (discardindex < player.cardcount())):
                 # proper input
                 dcard = player.getcard(discardindex)
+                self.log[1] = dcard
                 #print(dcard, ' is discarded from:')
                 #print(player.gethand(), 'hand')
                 if(player.hold != []):
@@ -375,6 +376,7 @@ class Game:
             else:
                 move = player.drawmove(self.discarddeck)
             if (move == '1'):
+                self.log[0] = 1
                 try:
                     (self.maindeck.peek())
                 except:
@@ -396,6 +398,7 @@ class Game:
             
             elif (move == '2'):
                 #player.hand.drawfrom(self.discarddeck)
+                self.log[0] = 2
                 player.hold.append(self.discarddeck.deal())#add it to hold so it cant be discarded
                 #self.discard(player)
                 #if ((self.knocker[0] is None) == False):  # gotta put after discard to check for a knock
