@@ -46,7 +46,7 @@ def init(data):
     data.disp = 'menu'
     # what to display
     
-    data.log = '' 
+    data.log = [-1, (0,0)] 
     # display the last turn made
     
     data.cardmenulist = [[rand.randint(1,5), rand.randint(1,14), rand.randint(5,22), rand.randint(100,1200), 0] ] 
@@ -141,6 +141,15 @@ def cardClicker(x,y):
     
     return -1
 
+
+def translateLog(data):
+    base = data.log
+    deck = ['facedown deck', 'faceup deck'][data.log[0] - 1]
+    v = c.carddict[data.log[1][1]]
+    s = ['clubs', 'diamonds', 'hearts', 'spades'][data.log[1][0] -1]
+    card = v + ' of ' + s
+    return f'Drew from {deck}, and then discarded {card}'
+
 ###############DRAWING########################################################
 def drawMenu(canvas, data):
     #canvas.create_rectangle()
@@ -190,7 +199,8 @@ def drawBoard(canvas,data):
     
     #last turn
     canvas.create_text(1000, 300, text = "opponent's 'Last Turn: ", font = 'Arial 14 bold')
-    canvas.create_text(1000, 400, text = data.log, font = 'Arial 21 bold')
+    if(data.log[0] != -1):
+        canvas.create_text(1000, 330, text = translateLog(data), font = 'Arial 14')
     
     #checkbutton for show all cards
     canvas.create_rectangle(50, 200, 75, 225, fill = 'beige')
@@ -348,7 +358,7 @@ def otherStart(data):
             win( data)
         else:
             data.mode = 'p1start'
-        data.log = data.game.log
+        #data.log = data.game.log
     
     elif(move == 1):# pass
         if(data.startpass == True):
