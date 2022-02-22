@@ -198,7 +198,7 @@ def drawBoard(canvas,data):
 
     
     #last turn
-    canvas.create_text(1000, 300, text = "opponent's 'Last Turn: ", font = 'Arial 14 bold')
+    canvas.create_text(1000, 300, text = "Opponent's 'Last Turn: ", font = 'Arial 14 bold')
     if(data.log[0] != -1):
         canvas.create_text(1000, 330, text = translateLog(data), font = 'Arial 14')
     
@@ -349,10 +349,10 @@ def mouseButtons(event, data): #checks/unchecks buttons on main board
             
 ####OTher Player Functions#################################
 def otherStart(data):
-    sleep(5)
+    #sleep(5)
     move = data.game.dealphase(data.players[1])
     if(move == 0): # draw
-        sleep(5)
+        #sleep(5)
         discmove = data.game.discard(data.players[1]) 
         if(discmove == 1):
             win( data)
