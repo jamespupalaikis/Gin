@@ -2,6 +2,7 @@
 
 from heapq import *
 
+
 from sklearn.utils import shuffle
 import Cards as c
 import ModelTraining as m
@@ -31,21 +32,25 @@ game = m.TrainGame(p1,p2)
 vals = game.playgame()
 print(vals[0])
 x = 0
+
 for i in vals[2][0]:
     x += 1
     print(x)
     print(i)
 x = 0
+
 for i in vals[2][1]:
     x += 1
     print(x)
     print(i)
 x = 0
+
 for i in vals[2][2]:
     x += 1
     print(x)
     print(i)
 x = 0
+
 for i in vals[2][3]:
     x += 1
     print(x)
@@ -57,6 +62,7 @@ for i in vals[2][4]:
     print(i)'''
 
 
+
 load = "models/trainingmodels/draw_0.pth"
 dn = mod.DrawNet()
 dn.load_state_dict(torch.load(load))
@@ -65,6 +71,7 @@ brd = np.zeros((3, 4, 13))
 brd2 = brd
 for i in range(rand.randint(0, 22)):
     brd2[rand.randint(0, 2)][rand.randint(0, 3)][rand.randint(0, 12)] = 1
+
 
 
 def unison_shuffled_copies(a, b):
