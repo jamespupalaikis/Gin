@@ -145,11 +145,11 @@ class textplayer(agent):
 
 
 class human(agent):
-    def __init__(self, name = 'You' ):
+    def __init__(self, name = 'Human' ):
         agent.__init__(self, name)
         
     def __repr__(self):
-        return f'Human Player {self.name}'
+        return f'{self.name}'
     
     def identify(self):
         return True

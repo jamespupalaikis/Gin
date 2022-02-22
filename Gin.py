@@ -69,6 +69,10 @@ def init(data):
     
     data.startpass = True #True until a pass is given, then False
     
+    data.diff = 0
+    #difficulty; 0 for easy, 1 for normal
+    
+    
     pass
 
 ##############################################################################
@@ -156,10 +160,26 @@ def drawMenu(canvas, data):
     for card in data.cardmenulist:
         drawCard(canvas, card[0], card[1], card[3], card[4])
     
-    canvas.create_rectangle(data.width//2 - 190, data.height//2 - 60, data.width//2 + 190, data.height//2 + 60, fill = 'yellow')
+    canvas.create_rectangle(data.width//2 - 190, data.height//2 + 60, data.width//2 + 190, data.height//2 + 180, fill = 'yellow')
     canvas.create_text(data.width//2, data.height//2 - 220, text = 'Gin Rummy',font="Arial 80 bold", fill = 'green')
-    canvas.create_text(data.width//2, data.height//2 - 120, text = 'By James Pupalaikis',font="Arial 33 bold", fill = 'blue')
-    canvas.create_text(data.width//2, data.height//2, text = 'Play Now',font="Arial 55 bold", fill = 'blue')
+    canvas.create_text(data.width//2, data.height//2 - 100, text = 'Select Difficulty',font="Arial 33 bold", fill = 'blue')
+    canvas.create_text(data.width//2 - 100, data.height//2 , text = 'Easy',font="Arial 23 bold", fill = 'black')
+    canvas.create_text(data.width//2 + 100, data.height//2 , text = 'Normal',font="Arial 23 bold", fill = 'black')
+    canvas.create_text(data.width//2, data.height//2 + 120, text = 'Play Now',font="Arial 55 bold", fill = 'blue')
+    
+    
+    
+    
+    if(data.diff == 0):
+        canvas.create_polygon(data.width//2 - 150, data.height//2,
+                              data.width//2 - 180, data.height//2 - 30,
+                              data.width//2 - 180, data.height//2 + 30,
+                              fill = 'red')
+    elif(data.diff == 1):
+        canvas.create_polygon(data.width//2 + 45, data.height//2,
+                              data.width//2 + 15, data.height//2 - 30,
+                              data.width//2 + 15, data.height//2 + 30,
+                              fill = 'red')
     
 
 def drawBoard(canvas,data):
@@ -250,10 +270,25 @@ def drawWin(canvas, data):
 ############################################################################
 # MOUSE FUNCTIONS
 def mouseMenu(event, data):
-    if(event.x >data.width//2 - 190 and event.x <data.width//2 + 190 ):
-        if(event.y >data.height//2 - 60 and event.y <data.height//2 + 60):
+    x,y= event.x, event.y
+    # Test
+
+    
+    if(y > data.height//2- 30  and y <  data.height//2 + 30 ):
+        if(x > data.width//2 - 100- 50 and x < data.width//2 - 100 + 50  ):
+            data.diff = 0
+        elif( x > data.width//2 + 100- 60  and x < data.width//2 + 100 +  60  ):
+            data.diff = 1
+    
+    
+    if(x >data.width//2 - 190 and x <data.width//2 + 190 ):
+        if(y >data.height//2 + 60 and y <data.height//2 + 180):
             #########_Start a game_##########
-            data.players = [agents.human(), agents.qlearner(data.models)]
+            if(data.diff == 0):
+                p2 = agents.randombot('Computer')
+            elif(data.diff == 1):
+                p2 = agents.qlearner(data.models, 'Computer')
+            data.players = [agents.human(), p2]
             
             data.game = game.Game(data.players[0], data.players[1], output = 'False')
             #print(data.game.start, data.game.start.identify())
@@ -347,7 +382,9 @@ def mouseButtons(event, data): #checks/unchecks buttons on main board
         if(x > 50 and x < 75):
             data.showall = not (data.showall)
             
+            
 ####OTher Player Functions#################################
+
 def otherStart(data):
     #sleep(5)
     move = data.game.dealphase(data.players[1])
@@ -379,6 +416,7 @@ def otherDraw(data):
         data.mode = 'p1draw'
     data.log = data.game.log
 ###################################################################    
+
 def win( data):
     data.disp = 'win'
     points = data.game.getwinner()
@@ -419,7 +457,8 @@ def timerFired(data):
         draw = rand.randint(10)
         if (draw == 2):
             #items will take form [suit, value, speed, xloc, yloc]
-            data.cardmenulist.append([rand.randint(1,5), rand.randint(1,14), rand.randint(5,22), rand.randint(100,1200), 0])
+            data.cardmenulist.append([rand.randint(1,5), rand.randint(1,14),
+                                      rand.randint(5,22), rand.randint(100,1200), 0])
         for carditem in data.cardmenulist:
             carditem[4]+= carditem[2]
             if(carditem[4] >= 1500):

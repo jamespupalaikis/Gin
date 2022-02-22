@@ -40,7 +40,7 @@ for i in vals[2][0]:
 x = 0
 
 for i in vals[2][1]:
-    x += 1
+    x += 1n
     print(x)
     print(i)
 x = 0
