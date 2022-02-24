@@ -26,7 +26,7 @@ def unison_shuffled_copies(a, b):
 #################################
 
 # GLOBALS
-output = True
+output = False
 ###############################################################################
 
 
@@ -312,6 +312,9 @@ if (__name__ == "__main__"):
               "models/trainingmodels/discard_b3.pth"]
     #even more stable, some perfect games even
     
+    bench4 = ["models/trainingmodels/start_b4.pth",
+              "models/trainingmodels/draw_b4.pth",
+              "models/trainingmodels/discard_b4.pth"]
 
     aa = ["models/trainingmodels/start_init.pth",
           "models/trainingmodels/draw_init.pth",
@@ -333,8 +336,8 @@ if (__name__ == "__main__"):
           "models/trainingmodels/drawq.pth",
           "models/trainingmodels/discardq.pth"] 
 
-    #n_cycles(5  ,15  ,cc, dd, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= False, manip = False)#, fromsave= True)
-    n_cycles(1,1,dd, qq, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
+    n_cycles(5  ,15  ,dd, bench4, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= False, manip = False)#, fromsave= True)
+    #n_cycles(1,1,dd, qq, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
 
 
 

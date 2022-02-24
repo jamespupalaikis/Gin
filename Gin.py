@@ -16,16 +16,19 @@ from time import sleep
 #TODO
 #TODO
 #TODO
-# need to implement turn log
-# need to prettify knock button
+#Model undertuned, discard especially busted
+
+
+# need to implement turn log %%
+# need to prettify knock button%%
 # need to fix the sleep timer so that it sleeps while the proper turn instructions are shown
 # polish win screen/add replay button
-# add option to type name at beginning, label the players maybe
+
 
 #AMBITIOUS GOALS: 
 # implement animations (this might be a disaster)
 # implement full games
-# implement difficulty settings
+
 
 
 ########################
@@ -69,9 +72,11 @@ def init(data):
     
     data.startpass = True #True until a pass is given, then False
     
-    data.diff = 0
+    data.diff = 1
     #difficulty; 0 for easy, 1 for normal
     
+    
+    data.name = 'PLAYER 1'
     
     pass
 
@@ -161,15 +166,18 @@ def drawMenu(canvas, data):
         drawCard(canvas, card[0], card[1], card[3], card[4])
     
     canvas.create_rectangle(data.width//2 - 190, data.height//2 + 60, data.width//2 + 190, data.height//2 + 180, fill = 'yellow')
-    canvas.create_text(data.width//2, data.height//2 - 220, text = 'Gin Rummy',font="Arial 80 bold", fill = 'green')
-    canvas.create_text(data.width//2, data.height//2 - 100, text = 'Select Difficulty',font="Arial 33 bold", fill = 'blue')
+    canvas.create_text(data.width//2, data.height//2 - 300, text = 'Gin Rummy',font="Arial 80 bold", fill = 'green')
+    canvas.create_text(data.width//2, data.height//2 - 60, text = 'Select Difficulty',font="Arial 33 bold", fill = 'blue')
     canvas.create_text(data.width//2 - 100, data.height//2 , text = 'Easy',font="Arial 23 bold", fill = 'black')
     canvas.create_text(data.width//2 + 100, data.height//2 , text = 'Normal',font="Arial 23 bold", fill = 'black')
-    canvas.create_text(data.width//2, data.height//2 + 120, text = 'Play Now',font="Arial 55 bold", fill = 'blue')
+    canvas.create_text(data.width//2, data.height//2 + 120, text = 'Play Now',font="Arial 45 bold", fill = 'blue')
     
     
     
-    
+    canvas.create_text(data.width // 2,  data.height//2-60 - 130, text = 'Enter Name:',font ='Arial 30 bold')
+    canvas.create_rectangle(data.width//2 -200, data.height//2-30 - 130,data.width//2 +200, data.height//2+30 - 130 , fill = 'white')
+    canvas.create_text(data.width//2 -190, data.height//2 - 130, text = data.name, anchor = W, font ='Arial 20')
+    #draw difficulty selection arrow
     if(data.diff == 0):
         canvas.create_polygon(data.width//2 - 150, data.height//2,
                               data.width//2 - 180, data.height//2 - 30,
@@ -229,6 +237,9 @@ def drawBoard(canvas,data):
         canvas.create_text(65,212, text = '✓', fill = 'green', font = 'arial 18')
         
         
+    #Label players:
+    canvas.create_text(40,100, text = 'Computer', angle = 90, font = 'arial 16 bold')
+    canvas.create_text(40,580, text = data.players[0].name, angle = 90, font = 'arial 16 bold')
     
 def drawDirections(canvas, data):
     # create text for turn instructions
@@ -288,7 +299,7 @@ def mouseMenu(event, data):
                 p2 = agents.randombot('Computer')
             elif(data.diff == 1):
                 p2 = agents.qlearner(data.models, 'Computer')
-            data.players = [agents.human(), p2]
+            data.players = [agents.human(data.name), p2]
             
             data.game = game.Game(data.players[0], data.players[1], output = 'False')
             #print(data.game.start, data.game.start.identify())
@@ -415,6 +426,28 @@ def otherDraw(data):
     else:
         data.mode = 'p1draw'
     data.log = data.game.log
+    
+    
+    
+##############KEYPRESS FUNCTIONS###################################
+def menuKeys(event, data):
+    k = event.keysym
+    
+    
+    if(k == 'BackSpace'):
+        if(len(data.name) < 17):
+            data.name = data.name[:-1]
+    if(len(data.name) <= 15):
+        if(k in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'):
+            data.name += k
+        if(k == 'space'):
+            data.name += ' '
+        if(k == 'dollar'):
+            data.name = 'By James Pupalaikis'
+    print(k)
+
+
+  
 ###################################################################    
 
 def win( data):
@@ -449,8 +482,9 @@ def mousePressed(event, data):
        
 
 def keyPressed(event, data):
-    # use event.char and event.keysym
-    pass
+    if(data.disp == 'menu'):
+        menuKeys(event, data)
+    
 
 def timerFired(data):
     if(data.disp in ['menu', 'win']):
