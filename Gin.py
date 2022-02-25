@@ -55,9 +55,9 @@ def init(data):
     data.cardmenulist = [[rand.randint(1,5), rand.randint(1,14), rand.randint(5,22), rand.randint(100,1200), 0] ] 
     # cards falling in the menu
     
-    loadfrom = ["models/trainingmodels/start_b3.pth",
-              "models/trainingmodels/draw_b3.pth",
-              "models/trainingmodels/discard_b3.pth"]
+    loadfrom = ["models/trainingmodels/start_b4.pth",
+              "models/trainingmodels/draw_b4.pth",
+              "models/trainingmodels/discard_b4.pth"]
     
     startnet = mod.StartNet()
     startnet.load_state_dict(torch.load(loadfrom[0]))
