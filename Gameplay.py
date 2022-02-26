@@ -105,6 +105,7 @@ class Game:
             # a 1 passed will indicate a knock, or that cards are all out. 
             # in this case, break from the loop and get the winner
             # maybe remove the "knocker" global var?  can just process it here
+            # TODO: ^ 
             if(res == 1):
                 break
             self.playTurn(turns[1])
@@ -388,8 +389,10 @@ class Game:
                 
                 if(self.output == True):
                     print(f'You drew: {self.interpret(self.maindeck.peek())}')
-                    
-                player.hand.drawfrom(self.maindeck)
+                try:
+                    player.hand.drawfrom(self.maindeck)
+                except: 
+                    raise NameError('Empty deck, should not be able to get here')
                 #self.discard(player)
                 #if ((self.knocker[0] is None) == False):  # gotta put after discard to check for a knock
                 #    return
