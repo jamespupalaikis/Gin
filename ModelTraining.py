@@ -337,9 +337,9 @@ if (__name__ == "__main__"):
           "models/trainingmodels/discardq.pth"] 
 
     #n_cycles(5  ,15  ,dd, bench4, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= False, manip = False)#, fromsave= True)
-    #n_cycles(1,1,dd, qq, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
-    n_cycles(5  ,15  ,bench4, aa, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= True, manip = True)#, fromsave= True)
-    n_cycles(8  ,15  ,aa, bb, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= True, manip = True)#, fromsave= True)
+    #n_cycles(1,1,bb, qq, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
+    n_cycles(3  ,15  ,bb, cc, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= True, manip = True)#, fromsave= True)
+    n_cycles(6   ,15  ,cc, dd, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= True, manip = True)#, fromsave= True)
 
 
 # TODO: scores list not being updated properly
