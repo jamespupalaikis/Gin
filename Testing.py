@@ -101,5 +101,5 @@ heappush(heap, 2)
 heappush(heap, 123)
 heappush(heap, 12)
 
-a = 'fu'
-print('f' in a)
+a  = [1,2,3,4,5]
+
