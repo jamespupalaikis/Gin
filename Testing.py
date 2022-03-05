@@ -100,6 +100,7 @@ heappush(heap, 11)
 heappush(heap, 2)
 heappush(heap, 123)
 heappush(heap, 12)
-
-a  = [1,2,3,4,5]
-
+a = collections.defaultdict()
+a = {1:'a', 2:'b'}
+a.setdefault('c')
+print(a[69])
