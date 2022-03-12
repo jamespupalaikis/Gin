@@ -19,10 +19,10 @@ The network takes in 3 channels of matrices, representing the faceup card, the c
 </p>
  <br> <br> 
  <p>
-  The start networks and draw networks are very similar, both in structure and in purpose. The only differences between the two (other than the training data) is the loss function, and the game consequences of not drawing the faceup card. I strongly considered merging these into a single network (and still am) but I ultimately decided to keep them separate due to the expected result being the draw network training overwhelming the other data by sheer volume.  I will now refer to the draw network only, as it is functionally the same as the start network. 
+  The neural network that handles discards is quite a bit different from the other two in a few ways. It takes in 
 
 <br> 
-The network takes in 3 channels of matrices, representing the faceup card, the cards that have been discarded, and the player's hand. The loss function is It has a single output within (0,1), with a 1 representing the facedown deck and a 0 being a draw from the faceup pile. Each turn is stored when played, and the value trained on is calculated as 0.5 +  (points*mult *move)/(129 * 2), where points is the final score of the game (negative if the opponent won), mult is the penalty coefficient obtained from Bellman's equation equal to 0.965^(n) for the nth from last turn of the game, move is a number from  [-1,1] which takes -1 if the move decided by the network was the facedown pile and 1 if the network drew from the facup pile, and 129 is the maximum score for a game given the ruleset used. This labelling equation seems overly complicated, but it guarantees the "correct" answer that the network trains upon encourages the same move if the network won, and a different move if the result was a loss. It ends up being proportional to the final score, i.e. if the opponent wins with a maximum score of 129, and for a given boardstate the network returned a move <0.5, the training label will be  1. 
+
 </p>
 
 
