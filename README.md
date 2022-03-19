@@ -21,7 +21,7 @@ The network takes in 3 channels of matrices, representing the faceup card, the c
  <p>
   The neural network that handles discards is quite a bit different from the other two in a few ways. It takes in 
 
-<br> 
+<br>  
   
 </p>
 
