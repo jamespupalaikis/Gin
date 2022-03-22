@@ -24,6 +24,7 @@ The network takes in 3 channels of matrices, representing the faceup card, the c
 <br>  
   
 </p>
+
 ## Training Process
 
 <p>
