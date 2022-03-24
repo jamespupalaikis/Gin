@@ -37,5 +37,21 @@ An additional measure to avoid the aforementioned problem related to the skill o
 
 ## Results
 <p>
-Watch this space
+The efforts to stabilize the model were far more successful than I anticipated, and the qlearning model was mimicking the "correct" moves taught by the trainer over ~500 games played, or about 5000 turns. This is much faster than I expected, as it comes nowhere near the size of the boardstate space for gin rummy, but it seems the convolutional filters caught on to the patterns that represent strong hands relatively quickly. The results against a random computer agent before and after stabilization can be seen below. 
+# Put graph here!
+ <br></br>
+ <br></br>
+ Once the model was relatively stable, it took another ~3000 games played to start developing strategy beyond the rudimentary training model. The model took on advanced behaviors such as holding face cards initially to try to pick up early melds, as well as not attempting to build melds involving cards that had been discarded. Below are a series of graphs showing progression of gamescore over the training games, separated by the skill level of the computer adversary. 
+ <br></br>
+ <br></br>
+ # INSERT MORE GRAPHS HERE
+ 
+ 
+ 
+
 </p>
+
+## Future improvement
+<p>
+  There are myriad ways to improve this model as it currently is. For starters, there is more gamestate information that could be tracked that has large effects on the correct move. Most notably, an ideal computer would track which cards are known to be in the opponents hand, as well as trying to guess other cards based on the known in-hand cards. Additionally, as gin is a highly adverserial game in which the correct strategy is mostly determined by the opponent's strategy, a truly optimal gin rummy AI would be able to learn over several games to adapt to the opponent's strategies. This would be quite difficult givn the slow learning nature of neural networks right now, however perhaps it could be implemented by training the model repeatedly against a certain type of opponent, and giving a higher score importance for later games, before switching to a new opponent model with a different strategy and restarting. Of course, this model would also need to be able to store informaiton about how the opponent has been playing, which perhaps would be best suited for an LSTM/RNN model. 
+  </p>
