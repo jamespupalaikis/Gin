@@ -38,6 +38,7 @@ An additional measure to avoid the aforementioned problem related to the skill o
 ## Results
 <p>
 The efforts to stabilize the model were far more successful than I anticipated, and the qlearning model was mimicking the "correct" moves taught by the trainer over ~800 games played. This is much faster than I expected, as it comes nowhere near the size of the boardstate space for gin rummy, but it seems the convolutional filters caught on to the patterns that represent strong hands relatively quickly. The results against a random computer agent before and after stabilization can be seen below. 
+  
 ![Stablilization Progress](/ProgressImages/stabilization.png)
  
  Once the model was relatively stable, it took another ~3000 games played to start developing strategy beyond the rudimentary training model. The model took on advanced behaviors such as holding face cards initially to try to pick up early melds, as well as not attempting to build melds involving cards that had been discarded. Below are a series of graphs showing progression of gamescore over the training games, separated by the skill level of the computer adversary. 
