@@ -278,20 +278,213 @@ class betterrandom(agent):
         return move
 
 ##########################################################################
-
-class simpletree(agent):
-    def __init__(self, name = "Sammy Bot"):
+class bestbot(agent):
+    def __init__(self, models, name='Trainer', behavior = betterrandom):
         agent.__init__(self, name)
 
-    def __repr__(self):
-        return self.name
+
+        self.startnet, self.drawnet, self.discardnet = models
+
+       
+    
+    def getmodels(self):
+        return self.startnet, self.drawnet, self.discardnet
+
+
+    def dealhand(self, deck):  
+        # fills your hand from deck and updates the gamestate
+        self.hand.starthand(deck)
+        for drawn in self.hand.gethand():
+            self.state[0][drawn[0] - 1][drawn[1] - 1] = 1#update hand state
+
+    def analyzehand(self):
+        hand = self.hand.gethand()
+        pairs = [0]*13
+        protected = []
+        for card in hand:
+            if(pairs[card[1] - 1] == 0):
+                pairs[card[1] - 1] = -1
+            elif(pairs[card[1] - 1] == -1):
+                pairs[card[1] - 1] =1
+            
+            if(((card[0],card[1]-1) in hand) or ((card[0],card[1]+1) in hand)):
+                protected.append(card)
+        
+        for i in range(len(pairs)):
+            if(pairs[i] == -1):
+                pairs[i] = 0
+        
+        return pairs, protected
+        
+        
+                
 
     def initialmove(self, discarddeck):
-        return
-    def discardmove(self):
-        return
-    def drawmove(self):
-        return
+
+        move = 'pass'
+        for card in self.hand.gethand():
+            if(card[1] == discarddeck.peek()[1]):#check for same face value
+                move = "draw"
+
+        if(move == 'pass'):
+            self.first[2] = -1
+
+            return 'pass'
+        else:
+
+            return 'draw'
+
+
+    def drawmove(self,discarddeck):
+        top = discarddeck.peek()
+
+        move = '1'
+        val = 1
+        if(top[1] <= 7):
+            val -= 0.05
+            if(top[1] <= 5 ):
+                val -= 0.05
+                if(top[1] <= 3):
+                    val -= 0.1
+                    if(top[1] == 1):
+                        val -= 0.1
+                        
+        for card in self.hand.gethand():
+            if(card[1] == top[1]):#check for same face value
+                move =  '2'
+                val -=   .4
+                
+        
+        if((top[0], top[1] + 1) in self.hand.gethand()):
+            val -= .3
+            if(((top[0], top[1] + 2) in self.hand.gethand()) ):
+                val -= 0.7
+                move = '2'
+            if((top[0], top[1] -1) in self.hand.gethand()):
+                val -= 0.7
+                move = '2'
+                
+        elif(((top[0], top[1] - 1) in self.hand.gethand())  ):
+            val -= 0.3
+            if((top[0], top[1] - 2) in self.hand.gethand()): 
+                val -= 0.7
+                move = '2'
+            
+            
+        roll = rand.randint(0,30)
+        if(roll == 5):
+            move = '1'
+            val = 0
+            
+        val = min(val, 1)
+
+        if (move== '2'):#draw from discard pile
+
+
+            return '2'
+        
+        else:#draw from facedown pile
+
+            return '1'
+
+
+    def discardmove(self,discarddeck):
+        if(self.hold == []):
+            last = self.hand.gethand()[-1]
+        else:
+            last = self.hold[0]
+
+        self.updatemelds(self.hand.gethand() + self.hold)
+        deadv = self.deadvals()
+        deadv.sort()
+        dead = sum(deadv[:-1])
+        if (dead <= 10):
+            return 'k'
+ ################
+ 
+ 
+ 
+     
+        viables = copy.copy(self.deadwood[1])
+        if(self.hold != []):
+            try:
+                viables.remove(self.hold[0])
+            except:
+                pass
+        self.hand.addto(self.hold.pop())
+        self.hold = []
+        secondary = []
+        # move =  str(self.hand.findcard(card))
+        #probs = self.singlearray(card).flatten()
+        pairs, protected = self.analyzehand()
+     
+        for car in viables:
+            if(pairs[car[0] - 1] == 1):
+                viables.remove(car)
+            if(car not in protected):
+                secondary.append(car)
+            elif(car in protected):
+                viables.remove(car)
+                secondary.append(car)
+     
+        if(viables != []):
+            card = rand.choice(viables)
+     
+        elif(secondary != []):
+            card = rand.choice(secondary)
+     
+        else: 
+            card = rand.choice(self.deadwood[1])
+     
+        probs = np.ones((4,13))
+        for i in range(len(pairs)):
+            if(pairs[i] == 1):
+                for j in range(4):
+                    probs[j][i] -= 0.22
+        for car in protected:
+            probs[car[0] - 1][car[1]-1] -= 0.22
+     
+        for i in range(4):
+            for j in range(13):
+                if(j <9):
+                    probs[i][j] -= (.13/10)*(10-j + 1)
+                 
+         
+         
+     
+        for car in self.meldslist():
+            probs[car[0] - 1][car[1]-1] = 0
+         
+            probs = softmax(probs.flatten(), axis = -1).reshape(4,13)
+        for car in self.meldslist():
+            probs[car[0] - 1][car[1]-1] = 0
+     
+        probs = probs.flatten()
+     #probs = softmax(probs)
+ ###########################
+    
+        enum = list(enumerate(probs))
+        enum.sort(key = lambda x: x[1], reverse=True)
+        for ind, cardoption in enum:
+            translatedcard = self.hand.translatearray(ind)
+            if(self.hand.isinhand(translatedcard)):
+                cardindex = ind #store this in log
+                self.turns[4].append(ind)
+
+                self.state[0][translatedcard[0] - 1][translatedcard[1] - 1] = 0  
+             #remove the card from hand
+             
+                return self.hand.findcard(translatedcard)
+
+
+    
+
+
+
+
+
+
+
 
 ##############################################################################
 
@@ -576,7 +769,7 @@ class forcetrainer(agent):
         dead = sum(deadv[:-1])
         if (dead <= 10):
             return 'k'
-    ################TODO: make this more sophisticated
+    ################
     
     
     
