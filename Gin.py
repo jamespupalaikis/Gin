@@ -13,7 +13,7 @@ from time import sleep
 ####################################
 # customize these functions
 ####################################
-#TODO
+#TODO PEP 8 NAMING CONVENTIONS
 #TODO
 #TODO
 #Model undertuned, discard especially busted
@@ -321,8 +321,10 @@ def mouseMenu(event, data):
 
 
 def drawcheck(event, data):
-    #checks mouse move and makes sure agent is only called if within proper bounds
-    #It will execute the move, and set the mode to the proper following state
+    '''checks mouse move and makes sure agent is only called if within proper 
+    bounds. It will execute the move, and set the mode to the proper following 
+    state'''
+    
     x,y = event.x, event.y
     if(x > 360 and x < 440):#faceup file
         if(y > 340 and y < 460):
@@ -332,7 +334,7 @@ def drawcheck(event, data):
 
             
             elif(data.mode == 'p1draw'):
-                data.game.playTurn(data.players[0], 1)
+                data.game.playturn(data.players[0], 1)
                 data.mode = 'p1discard'
     
     if(x > 760 and x < 840):#facedown/pass
@@ -357,7 +359,7 @@ def drawcheck(event, data):
                 
             
             elif(data.mode == 'p1draw'):
-                data.game.playTurn(data.players[0], 2)
+                data.game.playturn(data.players[0], 2)
                 data.mode = 'p1discard'
                 
 def discardCheck(event, data):
@@ -417,7 +419,7 @@ def otherStart(data):
         
         
 def otherDraw(data):
-    data.game.playTurn(data.players[1])
+    data.game.playturn(data.players[1])
     sleep(2)
     discmove = data.game.discard(data.players[1])
     if(discmove == 1):

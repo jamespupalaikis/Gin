@@ -43,6 +43,7 @@ import numpy as np
 
 
 class StartNet(nn.Module):
+    '''handles first-turn draw'''
     def __init__(self):
         super(StartNet, self).__init__()
         self.flatten = nn.Flatten()
@@ -73,6 +74,7 @@ class StartNet(nn.Module):
         return x# logits
 
 class DrawNet(nn.Module):
+    '''handles what pile to draw from on every turn except first'''
     def __init__(self):
         super(DrawNet, self).__init__()
         self.flatten = nn.Flatten()
@@ -112,6 +114,7 @@ class DrawNet(nn.Module):
         return logits
 
 class DiscardNet(nn.Module):
+    '''Handles which card to discard'''
     def __init__(self):
         super(DiscardNet, self).__init__()
         self.flatten = nn.Flatten()
@@ -150,15 +153,3 @@ if (__name__ == "__main__"):
     discardnet =  DiscardNet()
     torch.save(discardnet.state_dict(),"models/trainingmodels/discard_init.pth")
     print("Saved PyTorch Model State to models/trainingmodels/discard_init.pth")
-#x = np.ndarray*[[0 for i in range(104)]]
-#x = torch.tensor(np.expand_dims(np.append(np.zeros((52,1)),(np.zeros((52,1))), 0), -1) )
-    #x = torch.tensor((np.append(np.zeros((52,) ),(np.zeros((52,))), 0)) )
-    #print(x.shape)
-#x = torch.tensor(x)
-    #pred = discardnet(x.float())
-    #print(pred)
-    #print(list(enumerate(pred.tolist())))
-
-
-#print(51//13 + 1)
-#print(51%13 + 1)

@@ -19,8 +19,8 @@ import numpy.random as rand
 
 
 class Game: 
-# this will run a single game, return a result (reward/score), 
-# and a set of moves made throughout the game
+'''# this will run a single game, return a result (reward/score), 
+# and a set of moves made throughout the game'''
     def __init__(self, qlearner,player2, output = True ):
         startplayer = rand.randint(1,2)
         self.knocker = (None,None) #FIRST Player is knocker
@@ -60,6 +60,7 @@ class Game:
 
 
     def playgame_trainreturn(self):
+        '''Plays a game, returns the logged gameplay moves for training'''
         run = True
         self.discarddeck.add(self.maindeck.deal())
         res = self.dealphase(self.start)
@@ -94,7 +95,7 @@ class Game:
             
         while(run == True):
         
-            self.playTurn(turns[0])
+            self.playturn(turns[0])
             res = self.discard(turns[0])
             
             if(self.output == True):
@@ -108,7 +109,7 @@ class Game:
             # TODO: ^ 
             if(res == 1):
                 break
-            self.playTurn(turns[1])
+            self.playturn(turns[1])
             res = self.discard(turns[1])
             
             if(self.output == True):
@@ -128,7 +129,8 @@ class Game:
     # and the game function being multipurposed for use with the gameplay interface
             
 
-    def interpret(self, card):  # will return a translated card value
+    def interpret(self, card):  
+        '''# will return a translated card value'''
         s, v = card
         s = c.suitdict[s]
         v = c.carddict[v]
@@ -136,6 +138,7 @@ class Game:
 
 
     def interpretmelds(self, mylist):
+        '''interprets all melded cards'''
         new = []
         for meld in mylist:
             newmeld = []
@@ -146,6 +149,7 @@ class Game:
 
 
     def getwinner(self):
+        '''finds the winner, the win condition, and the score'''
         self.learner.updatemelds()
         self.player2.updatemelds()
         p1 = self.learner.deadwood[0]
@@ -217,6 +221,8 @@ class Game:
 
 
     def knock(self, player):
+        '''initiates a knock by {player} (has been checked already if possible)
+        '''
         deadwood = player.deadwood[1]
         deadvals = [c.valuedict[card[1]] for card in deadwood]
         deadvals.sort()
@@ -247,6 +253,7 @@ class Game:
 
 
     def discard(self, player, event = None):
+        '''Interfaces with the agent to choose a card then discard it'''
         if (self.discarddeck.cardcount() > 0):
             
             if(self.output == True):
@@ -321,6 +328,7 @@ class Game:
 
 
     def dealphase(self, first, event = None):  
+        '''The first turn of the game. '''
         # first will pass the hand of the player BEING DEALT TO. Index is a 0, unless the previous player has passed
 
         # other will be the player that is not drawing
@@ -360,8 +368,10 @@ class Game:
                     print('enter a valid input!')
 
 
-    def playTurn(self, player, event = None):
+    def playturn(self, player, event = None):
 
+        '''Main drawing turn phase. Called playturn because it automatically
+        calls discard function afterwards'''
         
         if(self.output == True):
             print(f"{player.name}'s Turn Now")

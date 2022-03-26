@@ -10,6 +10,7 @@ carddict = {0: 'Null',1:'A',2:'2',3:'3',4:'4',5:'5', 6:'6',7:'7', 8:'8', 9:'9',
 
 ##############################################################################
 def flatten(list_of_lists):
+    '''flatten lists'''
     if (len(list_of_lists) == 0):
         return list_of_lists
     if (isinstance(list_of_lists[0], list)):
@@ -17,9 +18,9 @@ def flatten(list_of_lists):
     return list_of_lists[:1] + flatten(list_of_lists[1:])
 
 
-def lessthan(left,right):  
-# comparison function returning if left is lower value than right 
-# (by suit, then face value)
+def less_than(left,right):  
+    '''comparison function returning if left is lower value than right 
+(by suit, then face value)'''
 
     if (left[0] == right[0]):
         if(left[1] == right[1]):
@@ -31,15 +32,16 @@ def lessthan(left,right):
 
 
 
-def sorthand(hand):
+def sort_hand(hand):
+    '''sorts hand, suit first'''
     if (len(hand) > 1):
         mid = len(hand) // 2
         left = hand[:mid]
         right = hand[mid:]
 
         # Recursive call on each half
-        sorthand(left)
-        sorthand(right)
+        sort_hand(left)
+        sort_hand(right)
 
         # Two iterators for traversing the two halves
         i = 0
@@ -49,7 +51,7 @@ def sorthand(hand):
         k = 0
 
         while( i < len(left) and j < len(right)):
-            if (lessthan(left[i] ,right[j])):
+            if (less_than(left[i] ,right[j])):
                 # The value from the left half has been used
                 hand[k] = left[i]
                 # Move the iterator forward
@@ -71,8 +73,9 @@ def sorthand(hand):
             j += 1
             k += 1
 ##############################################################################
-def getvalue(cards): 
-    #takes a list of cards and returns the sum of their face values
+def get_value(cards): 
+
+    '''takes a list of cards and returns the sum of their face values'''
     total = 0
     copy = deepcopy(cards)
     while(copy != []):
@@ -80,11 +83,11 @@ def getvalue(cards):
         total += valuedict[new[1]]
     return total
 
-def isrun(cards):
-    #returns whether contained cards contain a run
+def is_run(cards):
+    '''returns whether contained cards contain a run'''
     if(len(cards) < 3):
         return False
-    sorthand(cards)
+    sort_hand(cards)
     start = cards.pop(0)
     while(cards != []):
         next = cards.pop(0)
@@ -96,29 +99,29 @@ def isrun(cards):
 
 
 
-def findrun(card, bin):
-    # finds if a run can be made using the card, and the cards from the bin
+def find_run(card, bin):
+    '''finds if a run can be made using the card, and the cards from the bin'''
     goods = list(filter(lambda x: x[0] == card[0] , bin))
     #filter to same suit
     goods = list(filter(lambda x:  x[1] > card[1] , goods))
     #filter out smaller cards 
     # (they should have been included in prev searches bc hand is sorted)
     while(goods != []):
-        if(isrun([card] + goods)):
+        if(is_run([card] + goods)):
             runmade = [card] + goods
             return (runmade, list(filter(lambda x: x not in runmade, bin )))
         goods = goods[:-1]
 
     ass = [card] + bin
-    sorthand(ass)
+    sort_hand(ass)
     return(( [] , ass))
 
 
 
 
 
-def findset(card, bin):
-    #same but for sets, return ([set created], [remaining bin])
+def find_set(card, bin):
+    '''same as find_run but for sets, return ([set created], [remaining bin])'''
     goods = list(filter(lambda x: x[1] == card[1] , bin))
     bin2 = list(filter(lambda x: x not in goods, bin))
     if(len(goods) >= 2):
@@ -126,38 +129,40 @@ def findset(card, bin):
         return ([card] + goods, bin2)
     else:
         ass = [card] + bin
-        sorthand(ass)
+        sort_hand(ass)
         #print('setfind failed: ',([], ass) )
         return ([], ass)
 
-def ismeld(bin):
+def is_meld(bin):
+    '''checks for meld'''
     for card in bin:
         newbin = list(filter(lambda x: x != card ,bin))
-        if(findrun(card, newbin) or (findset(card, newbin) )):
+        if(find_run(card, newbin) or (find_set(card, newbin) )):
             return True
     return False
 
 
 def recurse(bin, melds = [], bestscore = 1000, bestgroup = [[],[]] ,index = 0):
-    #recurse() gives (deadwoodvalue, [[melds], [deadwood']])
-    #print("STARTING!", f"BIN IS {bin}")
-    if ((ismeld(bin) == False) or (index >= len(bin))): #(index >= len(bin)):
+    '''recurse() gives (deadwoodvalue, [[melds], [deadwood']])
+    finds the melds in a hand and gives deadwood value'''
 
-        val = getvalue(bin)
+    if ((is_meld(bin) == False) or (index >= len(bin))): #(index >= len(bin)):
+
+        val = get_value(bin)
         #print(f'index: {index}, bin: {bin}, score: {val}')
         if(val < bestscore):
             bestscore = val
             bestgroup = [melds, bin]
         return bestscore, bestgroup
 
-    sorthand(bin)
+    sort_hand(bin)
     #print(len(bin), index)
     card = bin[index]
     #print('1', bin)
     binmin = bin[:index] + bin[index + 1:]
     #print('2', binmin)
-    newmeld, newbin = findrun(card, binmin)
-    newmeld2, newbin2 = findset(card, binmin)
+    newmeld, newbin = find_run(card, binmin)
+    newmeld2, newbin2 = find_set(card, binmin)
 
 
     if newmeld == []:
@@ -183,7 +188,8 @@ def recurse(bin, melds = [], bestscore = 1000, bestgroup = [[],[]] ,index = 0):
     else:
         return score2, grouped2
 
-def meldeval(hand):
+def meld_eval(hand):
+    '''updates melds'''
     melds =recurse(hand)[1][0]
     flat = flatten(melds)
     deadwood = list(filter(lambda x:x not in flat, hand))
@@ -276,7 +282,7 @@ class hand:
         deck.add(card)
 
     def sort(self):
-        sorthand(self.cards)
+        sort_hand(self.cards)
 
     def cardcount(self):
         return len(self.cards)

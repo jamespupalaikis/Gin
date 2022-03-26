@@ -10,7 +10,6 @@ import Agents as a
 import BuildModel as mod
 from Gameplay import Game
 
-
 import torch
 from torch.utils.data import DataLoader, Dataset
 
@@ -18,6 +17,7 @@ from torch.utils.data import DataLoader, Dataset
 ###############################################################################
 
 def unison_shuffled_copies(a, b):
+    '''Shuffles two lists (data and labels) in the same way'''
     rng_state = rand.get_state()
     rand.shuffle(a)
     rand.set_state(rng_state)
@@ -26,23 +26,24 @@ def unison_shuffled_copies(a, b):
 #################################
 
 # GLOBALS
+# This determines whether to print progress/loss stuff while training 
 output = False
 ###############################################################################
 
 
 
 
-def manipfirst(obj, points):
-    #takes the first move training object(given its first element is True) 
-    # and puts it into trainable form
+def manip_first(obj, points):
+    '''takes the first move training object(given its first element is True) 
+    and puts it into trainable form (described in readme.md)'''
     assert(obj[0] == True)
     status, state, move = obj
     #ADD PENALTY HERE
     return state, points*move/129
 
-def manipdraw(obj, points,manip , turnpenalty = 0.965): 
-    #takes the first 2 elements of the returned data(the draw elements) 
-    # and puts it into trainable form
+def manip_draw(obj, points,manip , turnpenalty = 0.965): 
+    '''takes the first 2 elements of the returned data(the draw elements) 
+     and puts it into trainable form (described in readme.md)'''
     state, move = obj
     assert(len(state) == len(move))
     state.reverse()
@@ -62,9 +63,9 @@ def manipdraw(obj, points,manip , turnpenalty = 0.965):
     return state, move
 
 
-def manipdiscard(obj, points, manip, turnpenalty = 0.99): 
-    #takes the last 3 elements of the returned data(the discard elements) 
-    # and puts into trainable form
+def manip_discard(obj, points, manip, turnpenalty = 0.99): 
+    '''takes the last 3 elements of the returned data(the discard elements) 
+    and puts into trainable form (described in readme.md)'''
     state, baseprobs, choiceindex = obj
     assert(len(baseprobs) == len(choiceindex))
     state.reverse()
@@ -87,6 +88,7 @@ def manipdiscard(obj, points, manip, turnpenalty = 0.99):
 
 
 class customData(Dataset):
+    '''Dataloader for pytorch model'''
     def __init__(self,x,y):
         x = np.array(x)
         y = np.array(y)
@@ -103,7 +105,8 @@ class customData(Dataset):
         ydat = self.y[index]
         return (xdat, ydat)
 
-def trainmodel(dataloader, model, loss_fn, optimizer):
+def train_model(dataloader, model, loss_fn, optimizer):
+    '''Given a dataloader, a model and training params, will train the model'''
     size = len(dataloader.dataset)
     model.train()
     for batch, (x,y) in enumerate(dataloader):
@@ -130,8 +133,8 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Using {device} device")
 
 
-def savemodels(models, saveto):
-
+def save_models(models, saveto):
+    '''Saves the models (duh)'''
     startnet, drawnet, discnet = models
     startloc, drawloc, discloc = saveto
     torch.save(startnet.state_dict(), startloc)
@@ -140,10 +143,10 @@ def savemodels(models, saveto):
     print('All Models Saved')
 
 
-def TrainCycle(player1, models, opponent, train = (True, True, True),
+def train_cycle(player1, models, opponent, train = (True, True, True),
                batches = (1,1,1), learning = (0.001, 0.00005, 0.00005),
                cyclelength = 1 , manip = True):
-    
+    '''Runs a cycle of {cyclelength} games,shuffles the turns, and trains model'''
     l = ([],[],[],[],[],[])
     fulldraw_x,fulldraw_y,fulldiscard_x,fulldiscard_y,fullfirst_x,fullfirst_y=l
     batchstart, batchdraw, batchdisc = batches
@@ -168,13 +171,13 @@ def TrainCycle(player1, models, opponent, train = (True, True, True),
         #######################################################
         if(firstvals[0] == True):
             runfirst = True
-            first_x, first_y = manipfirst(firstvals, points)
+            first_x, first_y = manip_first(firstvals, points)
             #fullfirst_x += first_x.tolist()
             fullfirst_x += [first_x]
             fullfirst_y.append( first_y)
      
-        draw_x, draw_y = manipdraw(turnvals[:2], points, manip)
-        discard_x, discard_y = manipdiscard(turnvals[2:], points, manip)
+        draw_x, draw_y = manip_draw(turnvals[:2], points, manip)
+        discard_x, discard_y = manip_discard(turnvals[2:], points, manip)
         fulldraw_x += draw_x
         fulldraw_y += draw_y
         fulldiscard_x += discard_x
@@ -216,7 +219,7 @@ def TrainCycle(player1, models, opponent, train = (True, True, True),
             for t in range(startepochs):
                 print('epoch ', t + 1, ' out of ', startepochs, ' Startnet')
     
-                trainmodel(first_data,startmodel,startloss_fn, startoptimizer)
+                train_model(first_data,startmodel,startloss_fn, startoptimizer)
     
                 #(acc, loss) = test(test_dataloader, model, loss_fn)
     print('#' * 25)
@@ -230,7 +233,7 @@ def TrainCycle(player1, models, opponent, train = (True, True, True),
         for t in range(drawepochs):
             print('epoch ', t + 1, ' out of ', drawepochs, ' Drawnet')
     
-            trainmodel(draw_data, drawmodel, drawloss_fn, drawoptimizer)
+            train_model(draw_data, drawmodel, drawloss_fn, drawoptimizer)
             # (acc, loss) = test(test_dataloader, model, loss_fn)
         
     print('#' * 25)
@@ -245,7 +248,7 @@ def TrainCycle(player1, models, opponent, train = (True, True, True),
         for t in range(discepochs):
             print('epoch ', t + 1, ' out of ', discepochs, ' Discardnet')
     
-            trainmodel(discard_data, discmodel, discloss_fn, discoptimizer)
+            train_model(discard_data, discmodel, discloss_fn, discoptimizer)
             # (acc, loss) = test(test_dataloader, model, loss_fn)
     
         # RETURN vals and labels, to assemble back together and train on
@@ -254,6 +257,11 @@ def TrainCycle(player1, models, opponent, train = (True, True, True),
 def n_cycles(cycles, cyclelength , loadfrom, saveto, player1 = a.qlearner, 
              opponent = a.betterrandom(),  interval = 4, fromsave= False, 
              addtopoints = True , manip = True):
+    
+    '''As titled, runs n cycles of {cyclelength} games each, shuffled within 
+    each cycle. '''
+    
+    
     backup = ["models/trainingmodels/start_backup.pth", 
               "models/trainingmodels/draw_backup.pth",
               "models/trainingmodels/discard_backup.pth"]
@@ -276,14 +284,14 @@ def n_cycles(cycles, cyclelength , loadfrom, saveto, player1 = a.qlearner,
         print('#*'*60)
         print(' ')
         print(' ')
-        pts.append(TrainCycle(player1, models, opponent, 
+        pts.append(train_cycle(player1, models, opponent, 
                               cyclelength=cyclelength, 
                               batches = (1,8,8), 
                               manip = manip))
         
         if((i+1)%interval == 0):
-            savemodels(models, backup)
-    savemodels(models, saveto)
+            save_models(models, backup)
+    save_models(models, saveto)
     if(addtopoints == True):
         p = np.genfromtxt('pointslist.csv').tolist()
         p += pts
@@ -336,10 +344,8 @@ if (__name__ == "__main__"):
           "models/trainingmodels/drawq.pth",
           "models/trainingmodels/discardq.pth"] 
 
-    #n_cycles(5  ,15  ,dd, bench4, player1 = a.forcetrainer, opponent=a.betterrandom(),addtopoints= False, manip = False)#, fromsave= True)
-    #n_cycles(1,1,bb, qq, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= False)#, fromsave= True)
     n_cycles(1  ,10  ,aa  , aa, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= True, manip = True)#, fromsave= True)
-    #n_cycles(6   ,15  ,cc, dd, player1 = a.qlearner, opponent=a.betterrandom(),addtopoints= True, manip = True)#, fromsave= True)
+
 
 
 # TODO: scores list not being updated properly
