@@ -1,5 +1,4 @@
-# events-example0.py
-# Barebones timer, mouse, and keyboard events
+
 import Cards as c
 from tkinter import *
 import numpy.random as rand
@@ -11,16 +10,20 @@ import Agents as agents
 
 from time import sleep
 ####################################
-# customize these functions
+# Programmed in event-based paradigm; 
+# Timerfired updates at 10hz (one refresh every event.timerDelay ms)
+# cavas redrawn each timer fire. Mouse and keys register an event.
 ####################################
+
 #TODO PEP 8 NAMING CONVENTIONS
 #TODO
 #TODO
 #Model undertuned, discard especially busted
 
 
-# need to implement turn log %%
-# need to prettify knock button%%
+
+
+
 # need to fix the sleep timer so that it sleeps while the proper turn instructions are shown
 # polish win screen/add replay button
 
@@ -34,7 +37,7 @@ from time import sleep
 ########################
 
 def init(data):
-    # load data.xyz as appropriate
+    '''Initializes data struct'''
 
     
     data.winner = [None, 0]
@@ -55,6 +58,8 @@ def init(data):
     data.cardmenulist = [[rand.randint(1,5), rand.randint(1,14), rand.randint(5,22), rand.randint(100,1200), 0] ] 
     # cards falling in the menu
     
+    
+    #Initialize the decision-making qlearning model
     loadfrom = ["models/trainingmodels/start_b4.pth",
               "models/trainingmodels/draw_b4.pth",
               "models/trainingmodels/discard_b4.pth"]
@@ -81,7 +86,7 @@ def init(data):
     pass
 
 ##############################################################################
-def drawsuit(canvas,suit,x,y):
+def draw_suit(canvas,suit,x,y):
     if(suit == 1): #club
         r = 7
         canvas.create_oval(x-r,y-r -11, x+r,y+r-11 , fill = 'black')
@@ -127,12 +132,12 @@ def drawCard(canvas, suit, value, x,y, outline = 'black'):
         
     
     else:
-        drawsuit(canvas, suit, x,y)
+        draw_suit(canvas, suit, x,y)
         canvas.create_text(x - 30, y - 50, text = c.carddict[value])
         canvas.create_text(x + 30, y + 50, text = c.carddict[value])
     
 ##############################################################################
-def cardClicker(x,y):
+def card_clicker(x,y):
     # Interpret clicking on cards in hand for discard
     zone = -1
     if(y > 340 and y < 460):
@@ -165,7 +170,7 @@ def drawMenu(canvas, data):
     for card in data.cardmenulist:
         drawCard(canvas, card[0], card[1], card[3], card[4])
     
-    canvas.create_rectangle(data.width//2 - 190, data.height//2 + 60, data.width//2 + 190, data.height//2 + 180, fill = 'yellow')
+    canvas.create_rectangle(data.width//2 - 210, data.height//2 + 60, data.width//2 + 210, data.height//2 + 180, fill = 'yellow')
     canvas.create_text(data.width//2, data.height//2 - 300, text = 'Gin Rummy',font="Arial 80 bold", fill = 'green')
     canvas.create_text(data.width//2, data.height//2 - 60, text = 'Select Difficulty',font="Arial 33 bold", fill = 'blue')
     canvas.create_text(data.width//2 - 100, data.height//2 , text = 'Easy',font="Arial 23 bold", fill = 'black')
@@ -184,9 +189,9 @@ def drawMenu(canvas, data):
                               data.width//2 - 180, data.height//2 + 30,
                               fill = 'red')
     elif(data.diff == 1):
-        canvas.create_polygon(data.width//2 + 45, data.height//2,
-                              data.width//2 + 15, data.height//2 - 30,
-                              data.width//2 + 15, data.height//2 + 30,
+        canvas.create_polygon(data.width//2 + 25, data.height//2,
+                              data.width//2 -5, data.height//2 - 30,
+                              data.width//2 -5, data.height//2 + 30,
                               fill = 'red')
     
 
@@ -228,7 +233,7 @@ def drawBoard(canvas,data):
     #last turn
     canvas.create_text(1000, 300, text = "Opponent's 'Last Turn: ", font = 'Arial 14 bold')
     if(data.log[0] != -1):
-        canvas.create_text(1000, 330, text = translateLog(data), font = 'Arial 14')
+        canvas.create_text(1000, 330, text = translateLog(data), font = 'Arial 12')
     
     #checkbutton for show all cards
     canvas.create_rectangle(50, 200, 75, 225, fill = 'beige')
@@ -244,7 +249,7 @@ def drawBoard(canvas,data):
 def drawDirections(canvas, data):
     # create text for turn instructions
     if(data.mode == 'p1start'):
-        text = 'Your turn now; Click the faceup card to draw, or facedown deck to pass'
+        text = 'Click the faceup card to draw or facedown deck to pass'
     
     elif(data.mode == 'p2start'):
         text = 'Player 2 is choosing...'
@@ -362,9 +367,9 @@ def drawcheck(event, data):
                 data.game.playturn(data.players[0], 2)
                 data.mode = 'p1discard'
                 
-def discardCheck(event, data):
+def discard_check(event, data):
     x,y = event.x, event.y
-    zone = cardClicker(x,y)
+    zone = card_clicker(x,y)
     if(zone == 'k'):
         print('tried knocking')
         check = data.players[0].canknock()
@@ -388,7 +393,7 @@ def discardCheck(event, data):
         
         
         
-def mouseButtons(event, data): #checks/unchecks buttons on main board
+def mouse_buttons(event, data): #checks/unchecks buttons on main board
 # 50, 200, 75, 225
     x,y = event.x, event.y
     if(y > 200 and y < 225):
@@ -446,7 +451,7 @@ def menuKeys(event, data):
             data.name += ' '
         if(k == 'dollar'):
             data.name = 'By James Pupalaikis'
-    print(k)
+
 
 
   
@@ -467,23 +472,23 @@ def win( data):
     
     
 ############################################################################
-def mousePressed(event, data):
+def mouse_pressed(event, data):
     if(data.disp == 'menu'):
         mouseMenu(event, data)
             
     if(data.disp == 'board'):
-        mouseButtons(event, data)
+        mouse_buttons(event, data)
         if(data.mode == 'p1start' or data.mode == 'p1draw'):
             #print('drawcheck')
             drawcheck(event, data)
             #print(data.mode)
         if(data.mode == 'p1discard'):
             #print('runningdisccheckrn')
-            discardCheck(event, data)
+            discard_check(event, data)
     
        
 
-def keyPressed(event, data):
+def key_pressed(event, data):
     if(data.disp == 'menu'):
         menuKeys(event, data)
     
@@ -504,7 +509,7 @@ def timerFired(data):
     pass
 
 def redrawAll(canvas, data):
-    canvas.create_rectangle(0,0,1300,800,fill = 'light blue')
+    canvas.create_rectangle(0,0,data.width,data.height,fill = 'light blue')
     if(data.disp == 'menu'):
         drawMenu(canvas, data)
     if(data.disp == 'board'):
@@ -524,14 +529,14 @@ def run(width=300, height=300):
         redrawAll(canvas, data)
         canvas.update()    
 
-    def mousePressedWrapper(event, canvas, data):
+    def mouse_pressedWrapper(event, canvas, data):
         #print('mpwrapper')
-        mousePressed(event, data)
+        mouse_pressed(event, data)
         
         redrawAllWrapper(canvas, data)
 
-    def keyPressedWrapper(event, canvas, data):
-        keyPressed(event, data)
+    def key_pressedWrapper(event, canvas, data):
+        key_pressed(event, data)
         redrawAllWrapper(canvas, data)
 
     def timerFiredWrapper(canvas, data):
@@ -552,12 +557,12 @@ def run(width=300, height=300):
     canvas.pack()
     # set up events
     root.bind("<Button-1>", lambda event:
-                            mousePressedWrapper(event, canvas, data))
+                            mouse_pressedWrapper(event, canvas, data))
     root.bind("<Key>", lambda event:
-                            keyPressedWrapper(event, canvas, data))
+                            key_pressedWrapper(event, canvas, data))
     timerFiredWrapper(canvas, data)
     # and launch the app
     root.mainloop()  # blocks until window is closed
     print("bye!")
 
-run(1300, 800)
+run(1500, 800)

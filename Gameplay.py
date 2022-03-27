@@ -19,8 +19,8 @@ import numpy.random as rand
 
 
 class Game: 
-'''# this will run a single game, return a result (reward/score), 
-# and a set of moves made throughout the game'''
+    '''# this will run a single game, return a result (reward/score), 
+    # and a set of moves made throughout the game'''
     def __init__(self, qlearner,player2, output = True ):
         startplayer = rand.randint(1,2)
         self.knocker = (None,None) #FIRST Player is knocker
