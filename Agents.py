@@ -24,7 +24,7 @@ class agent:
 
     def __repr__(self):
 
-        return 'null agent object'
+        return 'Computer'
 
     def dealhand(self, deck):  # fills your hand from deck
         self.hand.starthand(deck)
@@ -547,7 +547,7 @@ class qlearner(agent):
 
         input = torch.tensor(brd).float().unsqueeze(0)
         move = self.drawnet(input)[0].item()
-        print(f'learned draw move: {move}')
+        #print(f'learned draw move: {move}')
         self.turns[0].append(brd)
         if (move < 0.500001):#draw from discard pile
             # ADD TO LOG

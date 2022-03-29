@@ -11,17 +11,12 @@ import Agents as agents
 from time import sleep
 ####################################
 # Programmed in event-based paradigm; 
-# Timerfired updates at 10hz (one refresh every event.timerDelay ms)
+# timer_fired updates at 10hz (one refresh every event.timerDelay ms)
 # cavas redrawn each timer fire. Mouse and keys register an event.
 ####################################
 
-#TODO PEP 8 NAMING CONVENTIONS
+
 #TODO
-#TODO
-#Model undertuned, discard especially busted
-
-
-
 
 
 # need to fix the sleep timer so that it sleeps while the proper turn instructions are shown
@@ -114,7 +109,7 @@ def draw_suit(canvas,suit,x,y):
 
 
 ##############################################################################
-def drawCard(canvas, suit, value, x,y, outline = 'black'):
+def draw_card(canvas, suit, value, x,y, outline = 'black'):
     #card size will be 70*120, centered at x,y
     #as usual suit 1-4, value 1-13
     canvas.create_rectangle(x-40, y-60, x+40, y + 60, width = 2, fill = 'white', outline = outline)
@@ -156,7 +151,7 @@ def card_clicker(x,y):
     return -1
 
 
-def translateLog(data):
+def translate_log(data):
     base = data.log
     deck = ['facedown deck', 'faceup deck'][data.log[0] - 1]
     v = c.carddict[data.log[1][1]]
@@ -165,10 +160,10 @@ def translateLog(data):
     return f'Drew from {deck}, and then discarded {card}'
 
 ###############DRAWING########################################################
-def drawMenu(canvas, data):
+def draw_menu(canvas, data):
     #canvas.create_rectangle()
     for card in data.cardmenulist:
-        drawCard(canvas, card[0], card[1], card[3], card[4])
+        draw_card(canvas, card[0], card[1], card[3], card[4])
     
     canvas.create_rectangle(data.width//2 - 210, data.height//2 + 60, data.width//2 + 210, data.height//2 + 180, fill = 'yellow')
     canvas.create_text(data.width//2, data.height//2 - 300, text = 'Gin Rummy',font="Arial 80 bold", fill = 'green')
@@ -195,14 +190,14 @@ def drawMenu(canvas, data):
                               fill = 'red')
     
 
-def drawBoard(canvas,data):
+def draw_board(canvas,data):
     myhand = data.players[0].gethand()
     for i in range(len(myhand)): 
         # my hand
         card = myhand[i]
-        drawCard(canvas, card[0],card[1],(i+1)*105, 600)
+        draw_card(canvas, card[0],card[1],(i+1)*105, 600)
     for card in data.players[0].hold:
-        drawCard(canvas, card[0], card[1], (10 + 1)*105, 600, 'red')
+        draw_card(canvas, card[0], card[1], (10 + 1)*105, 600, 'red')
         
         
         
@@ -210,17 +205,17 @@ def drawBoard(canvas,data):
     for i in range(len(theirhand)):
         # their hand 
         if(data.showall == False):
-            drawCard(canvas, 0,0,(i + 1)*105, 100)
+            draw_card(canvas, 0,0,(i + 1)*105, 100)
         else:
             card = theirhand[i]
-            drawCard(canvas, card[0],card[1],(i+1)*105, 100)
+            draw_card(canvas, card[0],card[1],(i+1)*105, 100)
             
     # faceup pile
     up = data.game.discarddeck.peek()
-    drawCard(canvas, up[0], up[1] , 400, 400)
+    draw_card(canvas, up[0], up[1] , 400, 400)
     
     #facedown pile
-    drawCard(canvas, 0,0,800,400)
+    draw_card(canvas, 0,0,800,400)
     
     #Knock Button
     canvas.create_rectangle(300, 340, 350, 460, fill = 'red')
@@ -233,7 +228,7 @@ def drawBoard(canvas,data):
     #last turn
     canvas.create_text(1000, 300, text = "Opponent's 'Last Turn: ", font = 'Arial 14 bold')
     if(data.log[0] != -1):
-        canvas.create_text(1000, 330, text = translateLog(data), font = 'Arial 12')
+        canvas.create_text(1000, 330, text = translate_log(data), font = 'Arial 12')
     
     #checkbutton for show all cards
     canvas.create_rectangle(50, 200, 75, 225, fill = 'beige')
@@ -246,7 +241,7 @@ def drawBoard(canvas,data):
     canvas.create_text(40,100, text = 'Computer', angle = 90, font = 'arial 16 bold')
     canvas.create_text(40,580, text = data.players[0].name, angle = 90, font = 'arial 16 bold')
     
-def drawDirections(canvas, data):
+def draw_directionss(canvas, data):
     # create text for turn instructions
     if(data.mode == 'p1start'):
         text = 'Click the faceup card to draw or facedown deck to pass'
@@ -276,9 +271,9 @@ def drawDirections(canvas, data):
         
     canvas.create_text(50,300, anchor = W, text = text, font = 'Arial 14 bold')
     
-def drawWin(canvas, data):
+def draw_win(canvas, data):
     for card in data.cardmenulist:
-        drawCard(canvas, card[0], card[1], card[3], card[4])
+        draw_card(canvas, card[0], card[1], card[3], card[4])
     txt = f'{data.winner[0]} is the winner with a score of {data.winner[1]}!!!'
     canvas.create_text(data.width//2, data.height//2 , text = txt,
                        font="Arial 33 bold", fill = 'blue')
@@ -301,7 +296,7 @@ def mouseMenu(event, data):
         if(y >data.height//2 + 60 and y <data.height//2 + 180):
             #########_Start a game_##########
             if(data.diff == 0):
-                p2 = agents.randombot('Computer')
+                p2 = agents.randombot(name = 'Computer')
             elif(data.diff == 1):
                 p2 = agents.qlearner(data.models, 'Computer')
             data.players = [agents.human(data.name), p2]
@@ -325,7 +320,7 @@ def mouseMenu(event, data):
             data.disp = 'board'
 
 
-def drawcheck(event, data):
+def draw_check(event, data):
     '''checks mouse move and makes sure agent is only called if within proper 
     bounds. It will execute the move, and set the mode to the proper following 
     state'''
@@ -346,9 +341,7 @@ def drawcheck(event, data):
         if(y > 340 and y < 460):
             if(data.mode == 'p1start'):
                 dealmove = data.game.dealphase(data.players[0], 2)
-                #have global check to see if pass has been made to determin move
-                #FOLLOWING IS TEMPORARY 
-                #TODO: FIX
+
                 if(dealmove == 0): # draw
                     data.mode = 'p1discard'
                 
@@ -356,10 +349,10 @@ def drawcheck(event, data):
                     if(data.startpass == True):
                         data.startpass = False
                         data.mode = 'p2start'
-                        otherStart( data)
+                        other_start( data)
                     else:
                         data.mode = 'p2draw'
-                        otherDraw(data)
+                        other_draw(data)
                     
                 
             
@@ -389,7 +382,7 @@ def discard_check(event, data):
             win(data)
         else:
             data.mode = 'p2draw' 
-            otherDraw(data)
+            other_draw(data)
         
         
         
@@ -403,7 +396,7 @@ def mouse_buttons(event, data): #checks/unchecks buttons on main board
             
 ####OTher Player Functions#################################
 
-def otherStart(data):
+def other_start(data):
     #sleep(5)
     move = data.game.dealphase(data.players[1])
     if(move == 0): # draw
@@ -423,7 +416,7 @@ def otherStart(data):
             data.mode = 'p1draw'
         
         
-def otherDraw(data):
+def other_draw(data):
     data.game.playturn(data.players[1])
     sleep(2)
     discmove = data.game.discard(data.players[1])
@@ -437,7 +430,7 @@ def otherDraw(data):
     
     
 ##############KEYPRESS FUNCTIONS###################################
-def menuKeys(event, data):
+def menu_keys(event, data):
     k = event.keysym
     
     
@@ -465,13 +458,13 @@ def win( data):
     else:
         winner = [data.players[1], -points]
     data.winner = winner
-    print('asshole')
     
     
     
     
     
 ############################################################################
+#Event update functions#
 def mouse_pressed(event, data):
     if(data.disp == 'menu'):
         mouseMenu(event, data)
@@ -479,8 +472,8 @@ def mouse_pressed(event, data):
     if(data.disp == 'board'):
         mouse_buttons(event, data)
         if(data.mode == 'p1start' or data.mode == 'p1draw'):
-            #print('drawcheck')
-            drawcheck(event, data)
+            #print('draw_check')
+            draw_check(event, data)
             #print(data.mode)
         if(data.mode == 'p1discard'):
             #print('runningdisccheckrn')
@@ -490,10 +483,10 @@ def mouse_pressed(event, data):
 
 def key_pressed(event, data):
     if(data.disp == 'menu'):
-        menuKeys(event, data)
+        menu_keys(event, data)
     
 
-def timerFired(data):
+def timer_fired(data):
     if(data.disp in ['menu', 'win']):
         draw = rand.randint(10)
         if (draw == 2):
@@ -508,15 +501,15 @@ def timerFired(data):
             
     pass
 
-def redrawAll(canvas, data):
+def redraw_all(canvas, data):
     canvas.create_rectangle(0,0,data.width,data.height,fill = 'light blue')
     if(data.disp == 'menu'):
-        drawMenu(canvas, data)
+        draw_menu(canvas, data)
     if(data.disp == 'board'):
-        drawBoard(canvas, data)
-        drawDirections(canvas, data)
+        draw_board(canvas, data)
+        draw_directionss(canvas, data)
     if(data.disp == 'win'):
-        drawWin(canvas, data)
+        draw_win(canvas, data)
         
 
 ##############
@@ -524,26 +517,26 @@ def redrawAll(canvas, data):
 ####################################
 
 def run(width=300, height=300):
-    def redrawAllWrapper(canvas, data):
+    def redraw_allWrapper(canvas, data):
         canvas.delete(ALL)
-        redrawAll(canvas, data)
+        redraw_all(canvas, data)
         canvas.update()    
 
     def mouse_pressedWrapper(event, canvas, data):
         #print('mpwrapper')
         mouse_pressed(event, data)
         
-        redrawAllWrapper(canvas, data)
+        redraw_allWrapper(canvas, data)
 
     def key_pressedWrapper(event, canvas, data):
         key_pressed(event, data)
-        redrawAllWrapper(canvas, data)
+        redraw_allWrapper(canvas, data)
 
-    def timerFiredWrapper(canvas, data):
-        timerFired(data)
-        redrawAllWrapper(canvas, data)
-        # pause, then call timerFired again
-        canvas.after(data.timerDelay, timerFiredWrapper, canvas, data)
+    def timer_firedWrapper(canvas, data):
+        timer_fired(data)
+        redraw_allWrapper(canvas, data)
+        # pause, then call timer_fired again
+        canvas.after(data.timerDelay, timer_firedWrapper, canvas, data)
     # Set up data and call init
     class Struct(object): pass
     data = Struct()
@@ -560,7 +553,7 @@ def run(width=300, height=300):
                             mouse_pressedWrapper(event, canvas, data))
     root.bind("<Key>", lambda event:
                             key_pressedWrapper(event, canvas, data))
-    timerFiredWrapper(canvas, data)
+    timer_firedWrapper(canvas, data)
     # and launch the app
     root.mainloop()  # blocks until window is closed
     print("bye!")
